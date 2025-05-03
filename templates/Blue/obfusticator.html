@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obfuscated Files or Information</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap');
+
+        :root {
+            --color-dark: #050A0E;
+            --color-medium: #0D1B2A;
+            --color-light: #1B263B;
+            --color-neon-blue: #00D9FF;
+            --color-text-light: #c0c7d6;
+            --color-glitch1: #007BFF;
+            --color-glitch2: #00FFFF;
+        }
+
+        * {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--color-dark);
+            color: var(--color-text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Center content vertically */
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glowing Grid Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 217, 255, 0.1), rgba(0, 217, 255, 0.05)), url('https://www.transparenttextures.com/patterns/3px-tile.png');
+            z-index: -1;
+            animation: moveBackground 5s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: 100px 100px;
+            }
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 20px;
+            color: var(--color-neon-blue);
+            margin-bottom: 15px;
+            animation: glitch 0.5s infinite alternate;
+        }
+
+        @keyframes glitch {
+            0% {
+                text-shadow: 2px 2px var(--color-glitch1), -2px -2px var(--color-glitch2);
+            }
+            100% {
+                text-shadow: -2px -2px var(--color-glitch1), 2px 2px var(--color-glitch2);
+            }
+        }
+
+        p {
+            max-width: 700px;
+            margin-bottom: 20px;
+        }
+
+        .divider {
+            border-top: 1px dashed var(--color-neon-blue);
+            width: 100%;
+            max-width: 700px;
+            margin: 20px 0;
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        textarea, input {
+            width: 90%;
+            max-width: 700px;
+            padding: 12px;
+            border: 2px solid var(--color-neon-blue);
+            border-radius: 5px;
+            background: var(--color-medium);
+            color: var(--color-text-light);
+            font-size: 14px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease-in-out;
+            margin: 10px 0;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 120px;
+        }
+
+        textarea:disabled {
+            background-color: var(--color-light);
+            color: #777;
+        }
+
+        button {
+            background: var(--color-neon-blue);
+            color: var(--color-dark);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 10px var(--color-neon-blue);
+            border: 2px solid var(--color-neon-blue);
+            cursor: pointer;
+            width: 90%;
+            max-width: 700px;
+            margin: 10px 0;
+        }
+
+        button:hover {
+            color: var(--color-neon-blue);
+            background: transparent;
+            box-shadow: 0 0 20px var(--color-neon-blue);
+        }
+
+        /* Dropdown Styling */
+        .dropdown {
+            position: relative;
+            width: 90%;
+            max-width: 700px;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .dropdown-toggle {
+            color: var(--color-neon-blue);
+            padding: 12px;
+            border: 2px solid var(--color-neon-blue);
+            border-radius: 4px;
+            display: inline-block;
+            cursor: pointer;
+            background: var(--color-medium);
+            width: 100%;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: var(--color-light);
+            width: 100%;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+            left: 0;
+            margin-top: 4px;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            color: var(--color-text-light);
+            padding: 12px 16px;
+            display: block;
+            border-bottom: 1px solid var(--color-medium);
+            text-align: center;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--color-neon-blue);
+            color: var(--color-dark);
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+            margin-top: 10px;
+            width: 90%;
+            max-width: 700px;
+            text-align: center;
+        }
+
+        .message.success {
+            background-color: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--color-neon-blue);
+            color: var(--color-neon-blue);
+        }
+
+        .message.error {
+            background-color: rgba(255, 77, 79, 0.1);
+            border: 1px solid #ff4d4f;
+            color: #ff4d4f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Obfuscated Files or Information</h1>
+    <p>Adversaries may attempt to obfuscate files to evade detection.</p>
+
+    <div class="divider"></div>
+
+    <div class="content-wrapper">
+        <textarea id="inputText" rows="6" placeholder="Enter or paste your script here"></textarea>
+
+        <div class="dropdown">
+            <span class="dropdown-toggle" id="dropdownToggle">
+                <span id="currentEncMode">Base64 - Bash</span> &#9662;
+            </span>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <!-- Dropdown items will be added by JavaScript -->
+            </div>
+        </div>
+
+        <button id="encodeButton">🔒 Encode</button>
+
+        <input id="fileName" type="text" placeholder="Output File Name">
+
+        <textarea id="outputText" rows="6" disabled placeholder="The results will appear here"></textarea>
+
+        <button id="copyButton">📋 Copy</button>
+        <button id="clearButton">🗑️ Clear</button>
+        <button id="downloadButton">🔽 Download</button>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script src="/static/Blue/encoder.js"></script>
+    <script>
+        document.getElementById("downloadButton").addEventListener("click", function () {
+            const fileNameInput = document.getElementById("fileName").value.trim();
+            const outputText = document.getElementById("outputText").value;
+        
+            if (!outputText) {
+                alert("The output field is empty. Nothing to download!");
+                return;
+            }
+        
+            // Get language from the selected encoding mode (e.g., "Base64 - Bash")
+            const encModeText = document.getElementById("currentEncMode").textContent;
+            const lang = encModeText.split(" - ")[1]?.toLowerCase();
+        
+            // Determine extension
+            let extension = "txt"; // fallback
+            switch (lang) {
+                case "bash":
+                    extension = "sh";
+                    break;
+                case "powershell":
+                    extension = "ps1";
+                    break;
+                case "python":
+                    extension = "py";
+                    break;
+                case "batch":
+                case "cmd":
+                    extension = "bat";
+                    break;
+                case "javascript":
+                    extension = "js";
+                    break;
+                default:
+                    extension = "txt";
+            }
+        
+            const fileName = fileNameInput ? `${fileNameInput}.${extension}` : `encoded_file.${extension}`;
+            const blob = new Blob([outputText], { type: "text/plain" });
+            const a = document.createElement("a");
+        
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        });
+        </script>
+        
+</body>
+</html>

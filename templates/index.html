@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Portal</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap');
+
+        :root {
+            --color-dark: #050A0E;
+            --color-medium: #0D1B2A;
+            --color-light: #1B263B;
+            --color-neon-green: #00FF41;
+            --color-neon-blue: #00D9FF;
+            --color-neon-red: #FF073A;
+            --color-neon-yellow: #FFD700;
+            --color-text-light: #c0c7d6;
+            --color-glitch1: #ff00ff;
+            --color-glitch2: #00ffff;
+        }
+
+        * {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--color-dark);
+            color: var(--color-text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glowing Grid Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.05)), url('https://www.transparenttextures.com/patterns/3px-tile.png');
+            z-index: -1;
+            animation: moveBackground 5s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: 100px 100px;
+            }
+        }
+
+        .container {
+            background: rgba(15, 25, 35, 0.85);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px var(--color-neon-green);
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid var(--color-neon-green);
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 20px;
+            text-align: center;
+            color: var(--color-neon-green);
+            margin-bottom: 20px;
+            position: relative;
+            animation: glitch 0.5s infinite alternate;
+        }
+
+        /* Glitch Animation */
+        @keyframes glitch {
+            0% {
+                text-shadow: 2px 2px var(--color-glitch1), -2px -2px var(--color-glitch2);
+            }
+            100% {
+                text-shadow: -2px -2px var(--color-glitch1), 2px 2px var(--color-glitch2);
+            }
+        }
+
+        .portal-links {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .portal-links a {
+            text-decoration: none;
+            color: var(--color-dark);
+            background: var(--color-neon-green);
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 10px var(--color-neon-green);
+            border: 2px solid var(--color-neon-green);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hover Glow Effect */
+        .portal-links a:hover {
+            color: var(--color-neon-green);
+            background: transparent;
+            box-shadow: 0 0 20px var(--color-neon-green);
+        }
+
+        /* Cyber Line Glitch Effect */
+        .portal-links a::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: skewX(-45deg);
+            transition: 0.3s;
+        }
+
+        .portal-links a:hover::before {
+            left: 100%;
+        }
+
+        /* Animated Scan Lines */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.02),
+                rgba(255, 255, 255, 0.02) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            animation: scanlines 0.3s linear infinite;
+        }
+
+        @keyframes scanlines {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(2px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome To CyberAllTheThings</h1>
+        <div class="portal-links">
+            <a href="{{ url_for('Red') }}">Red Dimension</a>
+            <a href="{{ url_for('blue') }}">Blue Dimension</a>
+        </div>
+        <div style="margin-top: 15px;">
+            <a href="{{ url_for('certificates') }}">CyberSecurity-Job-Certificates</a>
+        </div>
+    </div>
+
+    <div class="scanlines"></div>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSF Venom Builder</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap');
+
+        :root {
+            --color-dark: #050A0E;
+            --color-medium: #0D1B2A;
+            --color-light: #1B263B;
+            --color-neon-red: #FF073A;
+            --color-text-light: #c0c7d6;
+            --color-glitch1: #FF3131;
+            --color-glitch2: #FF073A;
+        }
+
+        * {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--color-dark);
+            color: var(--color-text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glowing Grid Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255, 7, 58, 0.1), rgba(255, 7, 58, 0.05)), url('https://www.transparenttextures.com/patterns/3px-tile.png');
+            z-index: -1;
+            animation: moveBackground 5s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: 100px 100px;
+            }
+        }
+
+        .container {
+            background: rgba(15, 25, 35, 0.85);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px var(--color-neon-red);
+            text-align: center;
+            width: 100%;
+            max-width: 1000px;
+            border: 2px solid var(--color-neon-red);
+            position: relative;
+            max-height: 100vh; /* Limits the height */
+            overflow-y: auto; /* Enables scrolling */
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 18px;
+            color: var(--color-neon-red);
+            margin-bottom: 20px;
+            animation: glitch 0.5s infinite alternate;
+        }
+
+        /* Glitch Animation */
+        @keyframes glitch {
+            0% {
+                text-shadow: 2px 2px var(--color-glitch1), -2px -2px var(--color-glitch2);
+            }
+            100% {
+                text-shadow: -2px -2px var(--color-glitch1), 2px 2px var(--color-glitch2);
+            }
+        }
+
+        .form-group, .form-row {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--color-text-light);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--color-neon-red);
+            border-radius: 5px;
+            background: var(--color-medium);
+            color: var(--color-text-light);
+            font-size: 14px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        input:focus, select:focus {
+            box-shadow: 0 0 10px var(--color-neon-red);
+            border-color: var(--color-neon-red);
+        }
+
+        button {
+            background: var(--color-neon-red);
+            color: var(--color-dark);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 10px var(--color-neon-red);
+            border: 2px solid var(--color-neon-red);
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            color: var(--color-neon-red);
+            background: transparent;
+            box-shadow: 0 0 20px var(--color-neon-red);
+        }
+
+        .collapsible {
+            margin-top: 20px;
+            border: 2px solid var(--color-neon-red);
+            border-radius: 5px;
+        }
+
+        .collapse-header {
+            background-color: var(--color-medium);
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 2px solid var(--color-neon-red);
+            text-transform: uppercase;
+            color: var(--color-text-light);
+            text-align: center;
+        }
+
+        .collapse-header:after {
+            content: '+';
+            float: right;
+            font-weight: bold;
+        }
+
+        .collapse-header.active:after {
+            content: '-';
+        }
+
+        .collapse-content {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease-out;
+            background-color: var(--color-light);
+            padding: 10px;
+        }
+
+        .command-container {
+            padding: 10px;
+        }
+
+        .command-text {
+            background-color: var(--color-medium);
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: monospace;
+            color: var(--color-neon-red);
+            border: 2px solid var(--color-neon-red);
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            background: var(--color-neon-red);
+            color: var(--color-dark);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 10px var(--color-neon-red);
+            border: 2px solid var(--color-neon-red);
+            cursor: pointer;
+        }
+
+        .copy-btn:hover {
+            color: var(--color-neon-red);
+            background: transparent;
+            box-shadow: 0 0 20px var(--color-neon-red);
+        }
+
+        /* Animated Scan Lines */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.02),
+                rgba(255, 255, 255, 0.02) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            animation: scanlines 0.3s linear infinite;
+        }
+
+        @keyframes scanlines {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(2px);
+            }
+        }
+
+        /* Back Button Styles */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            color: var(--color-neon-red);
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid var(--color-neon-red);
+            border-radius: 3px;
+            background: transparent;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px var(--color-neon-red);
+        }
+
+        .back-button:hover {
+            background: var(--color-neon-red);
+            color: var(--color-dark);
+            box-shadow: 0 0 20px var(--color-neon-red);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="javascript:history.back()" class="back-button">← BACK</a>
+        <h1>MSF Venom Builder</h1>
+        <p>Msfvenom is a command line instance of Metasploit that is used to generate and output all of the various types of shell code that are available in Metasploit.</p>
+        
+        <hr class="divider">
+        
+        <div id="error-message"></div>
+        
+        <form id="msfvenom-form">
+            <div class="form-group required">
+                <label for="payload">Payload</label>
+                <select id="payload" required></select>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col required">
+                    <label for="lhost">LHOST</label>
+                    <input type="text" id="lhost" placeholder="IP Address or domain (ex: 212.212.111.222)" maxlength="15" required>
+                </div>
+                <div class="form-col required">
+                    <label for="lport">LPORT</label>
+                    <input type="text" id="lport" placeholder="Port (ex: 1337)" maxlength="5" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <label for="encoder">Encoder</label>
+                    <select id="encoder"></select>
+                </div>
+                <div class="form-col">
+                    <label for="encoderiterations">Iterations</label>
+                    <input type="text" id="encoderiterations" placeholder="4">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="badcharacters">Bad Characters</label>
+                <input type="text" id="badcharacters" placeholder="\x00\x0a\x0d">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <label for="platform">Platform</label>
+                    <select id="platform"></select>
+                </div>
+                <div class="form-col">
+                    <label for="arch">Architecture</label>
+                    <select id="arch">
+                        <option value="x64">x64</option>
+                        <option value="x86">x86</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="nop">Nop's</label>
+                <input type="text" id="nop" placeholder="200" maxlength="5">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <label for="format">Format</label>
+                    <select id="format"></select>
+                </div>
+                <div class="form-col">
+                    <label for="outfile">Output File</label>
+                    <input type="text" id="outfile" placeholder="reverse_shell">
+                </div>
+            </div>
+        </form>
+        
+        <div class="collapsible">
+            <div class="collapse-header active">MSF Venom Command</div>
+            <div class="collapse-content" style="max-height: 100px;">
+                <div class="command-container">
+                    <div class="command-text" id="msfvenom-command"></div>
+                    <button class="copy-btn">Copy</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="collapsible">
+            <div class="collapse-header">Launch Console & Load Handler</div>
+            <div class="collapse-content">
+                <div class="command-container">
+                    <div class="command-text" id="launch-command"></div>
+                    <button class="copy-btn">Copy</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="collapsible">
+            <div class="collapse-header">Load Handler Only</div>
+            <div class="collapse-content">
+                <div class="command-container">
+                    <div class="command-text" id="handler-command"></div>
+                    <button class="copy-btn">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/Red/msfbuilder/main.js"></script>
+</body>
+</html>

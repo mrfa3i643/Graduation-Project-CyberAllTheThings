@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wordlist Generator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap');
+
+    :root {
+      --color-dark: #050A0E;
+      --color-medium: #0D1B2A;
+      --color-light: #1B263B;
+      --color-neon-red: #FF073A;
+      --color-text-light: #c0c7d6;
+      --color-glitch1: #FF3131;
+      --color-glitch2: #FF073A;
+    }
+
+    * {
+      font-family: 'Orbitron', sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--color-dark);
+      color: var(--color-text-light);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Glowing Grid Background */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(rgba(255, 7, 58, 0.1), rgba(255, 7, 58, 0.05)), url('https://www.transparenttextures.com/patterns/3px-tile.png');
+      z-index: -1;
+      animation: moveBackground 5s linear infinite;
+    }
+
+    @keyframes moveBackground {
+      from {
+        background-position: 0 0;
+      }
+      to {
+        background-position: 100px 100px;
+      }
+    }
+
+    .container {
+      background: rgba(15, 25, 35, 0.85);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px var(--color-neon-red);
+      text-align: center;
+      width: 100%;
+      max-width: 600px;
+      border: 2px solid var(--color-neon-red);
+      position: relative;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 18px;
+      color: var(--color-neon-red);
+      margin-bottom: 20px;
+      animation: glitch 0.5s infinite alternate;
+    }
+
+    /* Glitch Animation */
+    @keyframes glitch {
+      0% {
+        text-shadow: 2px 2px var(--color-glitch1), -2px -2px var(--color-glitch2);
+      }
+      100% {
+        text-shadow: -2px -2px var(--color-glitch1), 2px 2px var(--color-glitch2);
+      }
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      color: var(--color-text-light);
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid var(--color-neon-red);
+      border-radius: 5px;
+      background: var(--color-medium);
+      color: var(--color-text-light);
+      font-size: 14px;
+      text-align: center;
+      outline: none;
+      transition: all 0.3s ease-in-out;
+    }
+
+    input:focus {
+      box-shadow: 0 0 10px var(--color-neon-red);
+      border-color: var(--color-neon-red);
+    }
+
+    button {
+      background: var(--color-neon-red);
+      color: var(--color-dark);
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      text-transform: uppercase;
+      transition: all 0.3s ease-in-out;
+      box-shadow: 0 0 10px var(--color-neon-red);
+      border: 2px solid var(--color-neon-red);
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      color: var(--color-neon-red);
+      background: transparent;
+      box-shadow: 0 0 20px var(--color-neon-red);
+    }
+
+    /* Animated Scan Lines */
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.02) 1px,
+          transparent 1px,
+          transparent 2px
+      );
+      pointer-events: none;
+      animation: scanlines 0.3s linear infinite;
+    }
+
+    @keyframes scanlines {
+      from {
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(2px);
+      }
+    }
+
+    /* Back Button Styles */
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 8px;
+      color: var(--color-neon-red);
+      text-decoration: none;
+      padding: 5px 10px;
+      border: 1px solid var(--color-neon-red);
+      border-radius: 3px;
+      background: transparent;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 8px var(--color-neon-red);
+    }
+
+    .back-button:hover {
+      background: var(--color-neon-red);
+      color: var(--color-dark);
+      box-shadow: 0 0 20px var(--color-neon-red);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="javascript:history.back()" class="back-button">← BACK</a>
+    <h1>Wordlist Generator</h1>
+    <form id="wordlist-form">
+      <div class="form-group">
+        <label for="info">Enter Keywords (e.g., name, birthdate, etc.):</label>
+        <input type="text" id="info" placeholder="e.g., john doe 1990" required>
+      </div>
+      <div class="form-group">
+        <label for="years">Enter Years (e.g., 1990, 2000, etc.):</label>
+        <input type="text" id="years" placeholder="e.g., 1990,2000" required>
+      </div>
+      <button type="submit">Generate and Download Wordlist</button>
+    </form>
+  </div>
+
+  <div class="scanlines"></div>
+
+  <script>
+    document.getElementById('wordlist-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      // Get user inputs
+      const info = document.getElementById('info').value.split(' ');
+      const years = document.getElementById('years').value.split(',');
+
+      // Generate wordlist
+      const wordlist = generateWordlist(info, years);
+
+      // Download the wordlist
+      downloadWordlist(wordlist);
+    });
+
+    // Function to generate wordlist
+    function generateWordlist(info, years) {
+      const commonWords = ['admin', 'test', 'root'];
+      const commonNumbers = ['123123', '123456', '123456789', '12345678', '1234'];
+      const wordlist = [];
+
+      for (const word of [...info, ...commonWords]) {
+        wordlist.push(word);
+        for (const year of years) {
+          wordlist.push(word + year);
+          wordlist.push(word + '@' + year);
+        }
+      }
+
+      for (const number of [...commonNumbers, ...years]) {
+        wordlist.push(number);
+      }
+
+      return wordlist;
+    }
+
+    // Function to download wordlist as a .txt file
+    function downloadWordlist(wordlist) {
+      const blob = new Blob([wordlist.join('\n')], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'wordlist.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

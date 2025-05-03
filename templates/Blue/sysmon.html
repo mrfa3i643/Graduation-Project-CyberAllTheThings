@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sysmon Rule Generator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap');
+
+        :root {
+            --color-dark: #050A0E;
+            --color-medium: #0D1B2A;
+            --color-light: #1B263B;
+            --color-neon-blue: #00D9FF;
+            --color-text-light: #c0c7d6;
+            --color-glitch1: #007BFF;
+            --color-glitch2: #00FFFF;
+        }
+
+        * {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--color-dark);
+            color: var(--color-text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glowing Grid Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 217, 255, 0.1), rgba(0, 217, 255, 0.05)), url('https://www.transparenttextures.com/patterns/3px-tile.png');
+            z-index: -1;
+            animation: moveBackground 5s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: 100px 100px;
+            }
+        }
+
+        .container {
+            background: rgba(15, 25, 35, 0.85);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px var(--color-neon-blue);
+            text-align: center;
+            width: 100%;
+            max-width: 700px;
+            border: 2px solid var(--color-neon-blue);
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 18px;
+            color: var(--color-neon-blue);
+            margin-bottom: 20px;
+            animation: glitch 0.5s infinite alternate;
+        }
+
+        /* Glitch Animation */
+        @keyframes glitch {
+            0% {
+                text-shadow: 2px 2px var(--color-glitch1), -2px -2px var(--color-glitch2);
+            }
+            100% {
+                text-shadow: -2px -2px var(--color-glitch1), 2px 2px var(--color-glitch2);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--color-text-light);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--color-neon-blue);
+            border-radius: 5px;
+            background: var(--color-medium);
+            color: var(--color-text-light);
+            font-size: 14px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        input:focus {
+            box-shadow: 0 0 10px var(--color-neon-blue);
+            border-color: var(--color-neon-blue);
+        }
+
+        button {
+            background: var(--color-neon-blue);
+            color: var(--color-dark);
+            padding: 11px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 10px var(--color-neon-blue);
+            border: 2px solid var(--color-neon-blue);
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            color: var(--color-neon-blue);
+            background: transparent;
+            box-shadow: 0 0 20px var(--color-neon-blue);
+        }
+
+        .result-container {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background: rgba(15, 25, 35, 0.85);
+            border: 2px solid var(--color-neon-blue);
+            box-shadow: 0 0 10px var(--color-neon-blue);
+        }
+
+        pre {
+            white-space: pre-wrap;
+            background: var(--color-medium);
+            padding: 10px;
+            border-radius: 5px;
+            color: var(--color-neon-blue);
+            font-size: 14px;
+        }
+
+        /* Animated Scan Lines */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.02),
+                rgba(255, 255, 255, 0.02) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            animation: scanlines 0.3s linear infinite;
+        }
+
+        @keyframes scanlines {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(2px);
+            }
+        }
+
+        /* Back Button Styles */
+        .back-button {
+            position: absolute;
+            top: 30px;
+            left: 20px;
+            display: inline-block;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            color: var(--color-neon-blue);
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid var(--color-neon-blue);
+            border-radius: 3px;
+            background: transparent;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px var(--color-neon-blue);
+        }
+
+        .back-button:hover {
+            background: var(--color-neon-blue);
+            color: var(--color-dark);
+            box-shadow: 0 0 20px var(--color-neon-blue);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="javascript:history.back()" class="back-button">← BACK</a>
+        <h1>Sysmon Rule Generator</h1>
+        
+        <form id="sysmonForm">
+            <div class="form-group">
+                <label for="ruleName">Rule Name:</label>
+                <input type="text" id="ruleName" placeholder="Enter descriptive rule name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="processName">Process Name(s):</label>
+                <input type="text" id="processName" placeholder="cmd.exe; powershell.exe">
+            </div>
+            
+            <div class="form-group">
+                <label for="arguments">Argument(s):</label>
+                <input type="text" id="arguments" placeholder="whoami; net">
+            </div>
+            
+            <button type="button" onclick="generateSysmonRule()">Generate Rule</button>
+        </form>
+        
+        <div id="result" class="result-container">
+            <h3>Generated Rule</h3>
+            <pre id="ruleOutput"></pre>
+            <button id="downloadBtn">Download Rule</button>
+        </div>
+    </div>
+
+    <div class="scanlines"></div>
+
+    <script>
+        
+        function generateSysmonRule() {
+            const ruleName = document.getElementById('ruleName').value.trim().replace(/\s+/g, '_');
+            const processName = document.getElementById('processName').value.trim() || '*';
+            const arguments = document.getElementById('arguments').value.trim() || '*';
+
+            if (!ruleName) {
+                alert('Please enter a rule name');
+                return;
+            }
+
+            const sysmonRule = `<Sysmon>
+  <EventFiltering>
+    <ProcessCreate onmatch="include">
+      <Rule name="${ruleName}">
+        <ParentImage condition="contains">${processName}</ParentImage>
+        <CommandLine condition="contains">${arguments}</CommandLine>
+      </Rule>
+    </ProcessCreate>
+  </EventFiltering>
+</Sysmon>`;
+
+            document.getElementById('ruleOutput').textContent = sysmonRule;
+            document.getElementById('result').style.display = 'block';
+        }
+        
+    </script>
+<script>
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+        const ruleName = document.getElementById('ruleName').value.trim().replace(/\s+/g, '_');
+        const ruleContent = document.getElementById('ruleOutput').textContent;
+        const blob = new Blob([ruleContent], { type: 'application/xml' });
+        const url = URL.createObjectURL(blob);
+    
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${ruleName}.rule`;  // <-- fixed this line
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+    </script>
+    
+</body>
+</html>

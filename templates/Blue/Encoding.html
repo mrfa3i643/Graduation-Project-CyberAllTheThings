@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encoder/Decoder Tool</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap');
+
+        :root {
+            --color-dark: #050A0E;
+            --color-medium: #0D1B2A;
+            --color-light: #1B263B;
+            --color-neon-blue: #00D9FF;
+            --color-text-light: #c0c7d6;
+            --color-glitch1: #007BFF;
+            --color-glitch2: #00FFFF;
+        }
+
+        * {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--color-dark);
+            color: var(--color-text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 217, 255, 0.1), rgba(0, 217, 255, 0.05)), url('https://www.transparenttextures.com/patterns/3px-tile.png');
+            z-index: -1;
+            animation: moveBackground 5s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            from { background-position: 0 0; }
+            to { background-position: 100px 100px; }
+        }
+
+        .container {
+            background: rgba(15, 25, 35, 0.85);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px var(--color-neon-blue);
+            width: 100%;
+            max-width: 600px;
+            border: 2px solid var(--color-neon-blue);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 20px;
+            color: var(--color-neon-blue);
+            margin-bottom: 20px;
+            animation: glitch 0.5s infinite alternate;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 2px 2px var(--color-glitch1), -2px -2px var(--color-glitch2); }
+            100% { text-shadow: -2px -2px var(--color-glitch1), 2px 2px var(--color-glitch2); }
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 15px;
+            padding: 10px;
+            font-family: monospace;
+            background: var(--color-medium);
+            color: var(--color-neon-blue);
+            border: 2px solid var(--color-neon-blue);
+            border-radius: 6px;
+            resize: none;
+            outline: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        select, button {
+            padding: 10px 15px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 6px;
+        }
+
+        select {
+            background: var(--color-medium);
+            color: var(--color-neon-blue);
+            border: 2px solid var(--color-neon-blue);
+        }
+
+        button {
+            background: var(--color-glitch1);
+            color: white;
+            box-shadow: 0 0 10px var(--color-glitch1);
+        }
+
+        button:hover {
+            background: var(--color-glitch2);
+            box-shadow: 0 0 15px var(--color-glitch2);
+        }
+
+        .result {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            background: var(--color-medium);
+            padding: 15px;
+            border-radius: 6px;
+            color: var(--color-neon-blue);
+            white-space: pre-wrap;
+            word-break: break-word;
+            border-left: 4px solid var(--color-neon-blue);
+            text-align: left;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .result:hover {
+            background: var(--color-light);
+            color: white;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.02),
+                rgba(255, 255, 255, 0.02) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            animation: scanlines 0.3s linear infinite;
+        }
+
+        @keyframes scanlines {
+            from { transform: translateY(0); }
+            to { transform: translateY(2px); }
+        }
+
+        /* Back Button Styles */
+        .back-button {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            color: var(--color-neon-blue);
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid var(--color-neon-blue);
+            border-radius: 3px;
+            background: transparent;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px var(--color-neon-blue);
+        }
+
+        .back-button:hover {
+            background: var(--color-neon-blue);
+            color: var(--color-dark);
+            box-shadow: 0 0 20px var(--color-neon-blue);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div style="text-align: left;">
+            <a href="javascript:history.back()" class="back-button">← BACK</a>
+        </div>
+        <h1>Encoder/Decoder</h1>
+
+        <textarea id="inputText" placeholder="Enter text to encode or decode"></textarea>
+
+        <div class="controls">
+            <select id="modeSelect">
+                <option value="base64">Base64</option>
+                <option value="uri">URI</option>
+                <option value="hex">Hex</option>
+            </select>
+            <button onclick="performEncode()">Encode</button>
+            <button onclick="performDecode()">Decode</button>
+        </div>
+
+        <div id="resultDisplay" class="result" onclick="copyToClipboard(this)">
+            Results will appear here
+        </div>
+    </div>
+
+    <div class="scanlines"></div>
+
+    <script>
+        function toHex(str) {
+            return Array.from(str).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+        }
+
+        function hex2a(hex) {
+            return hex.match(/.{1,2}/g)?.map(byte => String.fromCharCode(parseInt(byte, 16))).join('') || '';
+        }
+
+        function encodeData(input, mode) {
+            try {
+                if (mode === "base64") return btoa(unescape(encodeURIComponent(input)));
+                if (mode === "uri") return encodeURIComponent(input);
+                if (mode === "hex") return toHex(input);
+                throw new Error("Invalid encoding mode");
+            } catch (error) {
+                return "Encoding error: " + error.message;
+            }
+        }
+
+        function decodeData(input, mode) {
+            try {
+                if (mode === "base64") return decodeURIComponent(escape(atob(input)));
+                if (mode === "uri") return decodeURIComponent(input);
+                if (mode === "hex") return hex2a(input);
+                throw new Error("Invalid decoding mode");
+            } catch (error) {
+                return "Decoding error: " + error.message;
+            }
+        }
+
+        function performEncode() {
+            const input = document.getElementById('inputText').value;
+            const mode = document.getElementById('modeSelect').value;
+            displayResult(encodeData(input, mode));
+        }
+
+        function performDecode() {
+            const input = document.getElementById('inputText').value;
+            const mode = document.getElementById('modeSelect').value;
+            displayResult(decodeData(input, mode));
+        }
+
+        function displayResult(result) {
+            const resultElement = document.getElementById('resultDisplay');
+            resultElement.innerText = result;
+        }
+
+        function copyToClipboard(element) {
+            navigator.clipboard.writeText(element.innerText);
+            element.innerText = "Copied!";
+            setTimeout(() => { element.innerText = "Click to copy result"; }, 1000);
+        }
+    </script>
+
+</body>
+</html>

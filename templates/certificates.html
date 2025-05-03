@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Certification Recommendations</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap');
+
+        :root {
+            --color-dark: #041F1E;
+            --color-medium: #063D36;
+            --color-light: #0A604F;
+            --color-neon-green: #00FF41;
+            --color-text-light: #C0FFD6;
+            --color-glitch1: #00FF7F;
+            --color-glitch2: #00FF41;
+        }
+
+        * {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--color-dark);
+            color: var(--color-text-light);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Glowing Grid Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.05)), 
+                        url('https://www.transparenttextures.com/patterns/3px-tile.png');
+            z-index: -1;
+            animation: moveBackground 5s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: 100px 100px;
+            }
+        }
+
+        .container {
+            max-width: 1000px;
+            height: 900px;
+            margin: 0 auto;
+            background: rgba(10, 96, 79, 0.85);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px var(--color-neon-green);
+            border: 2px solid var(--color-neon-green);
+            position: relative;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 22px;
+            color: var(--color-neon-green);
+            margin-bottom: 20px;
+            animation: glitch 0.5s infinite alternate;
+        }
+
+        /* Glitch Animation */
+        @keyframes glitch {
+            0% {
+                text-shadow: 2px 2px var(--color-glitch1), -2px -2px var(--color-glitch2);
+            }
+            100% {
+                text-shadow: -2px -2px var(--color-glitch1), 2px 2px var(--color-glitch2);
+            }
+        }
+
+        .table-container {
+            max-height: 800px; /* Limits table height */
+            overflow-y: auto; /* Enables vertical scrolling */
+            overflow-x: auto; /* Enables horizontal scrolling */
+            border: 2px solid var(--color-neon-green);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid var(--color-light);
+            color: var(--color-text-light);
+        }
+
+        th {
+            background-color: var(--color-neon-green);
+            font-weight: bold;
+            text-align: left;
+            color: var(--color-dark);
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--color-medium);
+        }
+
+        tr:hover {
+            background-color: var(--color-light);
+        }
+
+        /* Scanline Effect */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.02),
+                rgba(255, 255, 255, 0.02) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            animation: scanlines 0.3s linear infinite;
+        }
+
+        @keyframes scanlines {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(2px);
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cybersecurity Certification Recommendations</h1>
+        <div class="table-container">
+            <table>
+                <tr class="header-row">
+                    <th>Cyber Security/Privacy/Cloud Security Role</th>
+                    <th>Recommend Certifications</th>
+                </tr>
+                <tr>
+                    <td>Chief Information Security Officer (CISO)</td>
+                    <td>CISSP, CISM, CompTIA Security+, GIAC GSEC, CCISO</td>
+                </tr>
+                <tr>
+                    <td>Information security manager</td>
+                    <td>CISSP, CISM, CompTIA Security+, GIAC GSEC</td>
+                </tr>
+                <tr>
+                    <td>Cybersecurity Architect</td>
+                    <td>CISSP, CEH, SANS GIAC, CISM</td>
+                </tr>
+                <tr>
+                    <td>Risk/Compliance Manager</td>
+                    <td>CISSP, CRISC, CISA, GSEC, CRMP</td>
+                </tr>
+                <tr>
+                    <td>Cyber Policy planner</td>
+                    <td>CISSP, CISM, CASP+, GSEC, SSCP</td>
+                </tr>
+                <tr>
+                    <td>Security awareness Trainer</td>
+                    <td>ECSS, CompTIA Security+</td>
+                </tr>
+                <tr>
+                    <td>Devscops Engineer</td>
+                    <td>GCSA, CDE, CDP, CKA, DCA</td>
+                </tr>
+                <tr>
+                    <td>Cyber Security Consultant</td>
+                    <td>CompTIA Security+, CISSP, CISM, CEH</td>
+                </tr>
+                <tr>
+                    <td>Information Security Analyst</td>
+                    <td>CompTIA Security+, CEH, CISSP</td>
+                </tr>
+                <tr>
+                    <td>Penetration Tester</td>
+                    <td>OSCP, CEH, CompTIA PenTest+, GWAPT</td>
+                </tr>
+                <tr>
+                    <td>SOC Manager</td>
+                    <td>CISSP, CISM, GCCC, GSOM</td>
+                </tr>
+                <tr>
+                    <td>SIEM Engineer</td>
+                    <td>CISSP, CISM, CYA+, CASP+, GSOM, GDSA, GCED, GCIA</td>
+                </tr>
+                <tr>
+                    <td>Threat intelligence analyst</td>
+                    <td>CISSP, CISM, GSEC, GCTI, CTIA</td>
+                </tr>
+                <tr>
+                    <td>Cybersecurity Engineer</td>
+                    <td>CISSP, CompTIA Security+, CEH, GSEC</td>
+                </tr>
+                <tr>
+                    <td>Cybersecurity Analyst</td>
+                    <td>CompTIA CySA+, CEH, CISSP, GIAC GSEC</td>
+                </tr>
+                <tr>
+                    <td>Network Security Engineer</td>
+                    <td>CompTIA Security+, Cisco CCNA, CISSP, GSEC</td>
+                </tr>
+                <tr>
+                    <td>Systems Security Administrator</td>
+                    <td>CompTIA Security+, SSCP, CISSP, CEH</td>
+                </tr>
+                <tr>
+                    <td>Forensic Computer Analyst</td>
+                    <td>GCFA, CCE, EnCE</td>
+                </tr>
+                <tr>
+                    <td>Secure Software Developer</td>
+                    <td>CompTIA Secure Software Developer, GIAC GWEB, CSSLP</td>
+                </tr>
+                <tr>
+                    <td>Incident Responder</td>
+                    <td>GCIH, CERT-CSIH, ECIH</td>
+                </tr>
+                <tr>
+                    <td>Vulnerability Assessor</td>
+                    <td>CEH, CompTIA Security+, OSCP, CVPA</td>
+                </tr>
+                <tr>
+                    <td>Cryptographer</td>
+                    <td>GDSA, CompTIASecurity+</td>
+                </tr>
+                <tr>
+                    <td>Malware Analyst</td>
+                    <td>CISA, CRISC, GCEIT, CompTIA Security+</td>
+                </tr>
+                <tr>
+                    <td>Data privacy officer (DPO)</td>
+                    <td>CIPP, CIPM, C-DPO, CIPT</td>
+                </tr>
+                <tr>
+                    <td>Data Privacy Manager</td>
+                    <td>CIPP, CIPM, C-DPO, CIPT, CDPP, CDPSE</td>
+                </tr>
+                <tr>
+                    <td>Privacy Compliance Manager</td>
+                    <td>CIPP, CIPM, C-DPO, CIPT, CDPP, CDPSE</td>
+                </tr>
+                <tr>
+                    <td>data privacy auditor</td>
+                    <td>CIPP, CIPM, CDPA, ISO 27701 Lead Auditor</td>
+                </tr>
+                <tr>
+                    <td>Chief cloud security officer (CCSO)</td>
+                    <td>CCSP, CompTIA cloud+, CCSK, CKS, CCAK GCSA</td>
+                </tr>
+                <tr>
+                    <td>Cloud Security Analyst</td>
+                    <td>CCSP, CompTIA cloud+, CCSK, GCSA</td>
+                </tr>
+                <tr>
+                    <td>Cloud Security Engineer</td>
+                    <td>CCSP, CompTIA cloud+, CSE, CKCS CSK</td>
+                </tr>
+                <tr>
+                    <td>Cloud security Architect</td>
+                    <td>CCSP, CompTIA cloud+, CSA, CSSA, Professional Cloud Architect</td>
+                </tr>
+                <tr>
+                    <td>Cloud security auditors</td>
+                    <td>CCSP, CCSK, CCAK, GCSA, CISA</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

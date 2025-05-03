@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Memory Forensics</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+
+    :root {
+      --color-dark: #050A0E;
+      --color-medium: #0D1B2A;
+      --color-light: #1B263B;
+      --color-neon-blue: #00D9FF;
+      --color-text-light: #c0c7d6;
+      --color-glitch1: #007BFF;
+      --color-glitch2: #00FFFF;
+    }
+
+    * {
+      font-family: 'Fira Code', sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--color-dark);
+      color: var(--color-text-light);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(rgba(0, 217, 255, 0.1), rgba(0, 217, 255, 0.05)), url('https://www.transparenttextures.com/patterns/3px-tile.png');
+      z-index: -1;
+      animation: moveBackground 5s linear infinite;
+    }
+
+    @keyframes moveBackground {
+      from { background-position: 0 0; }
+      to { background-position: 100px 100px; }
+    }
+
+    .container {
+      background: rgba(15, 25, 35, 0.85);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px var(--color-neon-blue);
+      width: 100%;
+      max-width: 1600px;
+      border: 2px solid var(--color-neon-blue);
+      position: relative;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 30px;
+      color: var(--color-neon-blue);
+      text-align: center;
+      margin-bottom: 20px;
+      animation: glitch 0.5s infinite alternate;
+    }
+
+    @keyframes glitch {
+      0% { text-shadow: 2px 2px var(--color-glitch1), -2px -2px var(--color-glitch2); }
+      100% { text-shadow: -2px -2px var(--color-glitch1), 2px 2px var(--color-glitch2); }
+    }
+
+    h2, h3 {
+      margin-top: 20px;
+      padding-bottom: 5px;
+      text-align: left;
+    }
+
+    h2 {
+      color: var(--color-neon-blue);
+      border-bottom: 2px solid var(--color-neon-blue);
+    }
+
+    h3 {
+      color: var(--color-glitch1);
+      border-bottom: 2px solid var(--color-glitch1);
+    }
+
+    p {
+      font-size: 14px;
+      line-height: 1.6;
+      text-align: left;
+      margin-bottom: 15px;
+    }
+
+    pre {
+      background: var(--color-medium);
+      padding: 15px;
+      border-radius: 6px;
+      color: var(--color-neon-blue);
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      border-left: 4px solid var(--color-neon-blue);
+      text-align: left;
+      overflow-x: auto;
+      margin-bottom: 15px;
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--color-text-light);
+      text-align: center;
+    }
+
+    .scrollable-content {
+      max-height: 90vh;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.02),
+        rgba(255, 255, 255, 0.02) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      animation: scanlines 0.3s linear infinite;
+    }
+
+    @keyframes scanlines {
+      from { transform: translateY(0); }
+      to { transform: translateY(2px); }
+    }
+
+    select {
+      background: var(--color-medium);
+      color: var(--color-neon-blue);
+      border: 1px solid var(--color-neon-blue);
+      padding: 8px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      margin-right: 10px;
+    }
+
+    /* Back Button Styles */
+    .back-button {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 10px;
+      color: var(--color-neon-blue);
+      text-decoration: none;
+      padding: 8px 15px;
+      border: 1px solid var(--color-neon-blue);
+      border-radius: 3px;
+      background: transparent;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 8px var(--color-neon-blue);
+    }
+
+    .back-button:hover {
+      background: var(--color-neon-blue);
+      color: var(--color-dark);
+      box-shadow: 0 0 20px var(--color-neon-blue);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div style="text-align: left;">
+      <a href="javascript:history.back()" class="back-button">← BACK</a>
+    </div>
+    <h1>Memory Forensics</h1>
+
+    <div>
+      <label for="versionFilter">Volatility Version:</label>
+      <select id="versionFilter" onchange="applyFilters()">
+        <option value="all">All</option>
+        <option value="vol2">Volatility 2</option>
+        <option value="vol3">Volatility 3</option>
+      </select>
+
+      <label for="categoryFilter">Category:</label>
+      <select id="categoryFilter" onchange="applyFilters()">
+        <option value="all">All</option>
+        <option value="os">Collecting OS Info</option>
+        <option value="process">Process Information</option>
+        <option value="procdump">Procdump</option>
+        <option value="network">Network Information</option>
+        <option value="hivelist">Hivelist</option>
+        <option value="files">Files</option>
+      </select>
+    </div>
+
+    <div class="scrollable-content">
+      <div class="section">
+        <p>Memory forensics analyzes data stored in a computer's RAM to investigate running processes, network connections, and identify signs of intrusion, malware, or malicious activity.</p>
+      </div>
+
+      <!-- Templates: data-version="vol2|vol3", data-category="os|process|procdump|network|hivelist|files" -->
+      <h2 data-category="os">Collecting OS Info</h2>
+      <h3 data-version="vol2" data-category="os">Volatility 2</h3>
+      <pre data-version="vol2" data-category="os">vol.py -f memory.dump imageinfo
+vol.py -f memory.dump kdbgscan</pre>
+
+      <h3 data-version="vol3" data-category="os">Volatility 3</h3>
+      <pre data-version="vol3" data-category="os">vol3 -f memory.dump windows.info</pre>
+
+      <h2 data-category="process">Process Information</h2>
+      <h3 data-version="vol2" data-category="process">Volatility 2</h3>
+      <pre data-version="vol2" data-category="process">vol.py -f memory.dump --profile=&lt;profile&gt; pslist
+vol.py -f memory.dump --profile=&lt;profile&gt; psscan</pre>
+
+      <h3 data-version="vol3" data-category="process">Volatility 3</h3>
+      <pre data-version="vol3" data-category="process">vol3 -f memory.dump windows.pslist
+vol3 -f memory.dump windows.psscan</pre>
+
+      <h2 data-category="procdump">Procdump</h2>
+      <h3 data-version="vol2" data-category="procdump">Volatility 2</h3>
+      <pre data-version="vol2" data-category="procdump">vol.py -f memory.dump --profile &lt;profile&gt; procdump -p &lt;PID&gt; --dump-dir="output/dir"</pre>
+
+      <h3 data-version="vol3" data-category="procdump">Volatility 3</h3>
+      <pre data-version="vol3" data-category="procdump">vol3 -f memory.dump -o "output/dir" windows.dumpfiles --pid &lt;PID&gt;</pre>
+
+      <h2 data-category="network">Network Information</h2>
+      <h3 data-version="vol2" data-category="network">Volatility 2</h3>
+      <pre data-version="vol2" data-category="network">vol.py -f memory.dump --profile &lt;profile&gt; netscan
+vol.py -f memory.dump --profile &lt;profile&gt; netstat</pre>
+
+      <h3 data-version="vol3" data-category="network">Volatility 3</h3>
+      <pre data-version="vol3" data-category="network">vol3 -f memory.dump windows.netscan
+vol3 -f memory.dump windows.netstat</pre>
+
+      <h2 data-category="hivelist">Hivelist</h2>
+      <h3 data-version="vol2" data-category="hivelist">Volatility 2</h3>
+      <pre data-version="vol2" data-category="hivelist">vol.py -f memory.dump --profile &lt;profile&gt; hivelist</pre>
+
+      <h3 data-version="vol3" data-category="hivelist">Volatility 3</h3>
+      <pre data-version="vol3" data-category="hivelist">vol3 -f memory.dump windows.registry.hivelist</pre>
+
+      <h2 data-category="files">Files</h2>
+      <h3 data-version="vol2" data-category="files">Volatility 2</h3>
+      <pre data-version="vol2" data-category="files">vol.py -f memory.dump --profile &lt;profile&gt; filescan</pre>
+
+      <h3 data-version="vol3" data-category="files">Volatility 3</h3>
+      <pre data-version="vol3" data-category="files">vol3 -f memory.dump windows.filescan</pre>
+    </div>
+
+    <div class="footer">
+      <p>&copy; 2025 Cyber Forensics | All Rights Reserved</p>
+    </div>
+  </div>
+
+  <div class="scanlines"></div>
+
+  <script>
+    function applyFilters() {
+      const version = document.getElementById('versionFilter').value;
+      const category = document.getElementById('categoryFilter').value;
+
+      const allElements = document.querySelectorAll('[data-version], [data-category]');
+
+      allElements.forEach(el => {
+        const matchesVersion = version === 'all' || el.getAttribute('data-version') === version;
+        const matchesCategory = category === 'all' || el.getAttribute('data-category') === category;
+
+        if (matchesVersion && matchesCategory) {
+          el.style.display = '';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    }
+  </script>
+
+</body>
+
+
+</html>

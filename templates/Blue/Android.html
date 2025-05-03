@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Android Data Extraction</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+
+    :root {
+      --color-dark: #050A0E;
+      --color-medium: #0D1B2A;
+      --color-light: #1B263B;
+      --color-neon-blue: #00D9FF;
+      --color-text-light: #c0c7d6;
+      --color-glitch1: #007BFF;
+      --color-glitch2: #00FFFF;
+    }
+
+    * {
+      font-family: 'Fira Code', sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--color-dark);
+      color: var(--color-text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(rgba(0, 217, 255, 0.1), rgba(0, 217, 255, 0.05)), url('https://www.transparenttextures.com/patterns/3px-tile.png');
+      z-index: -1;
+      animation: moveBackground 5s linear infinite;
+    }
+
+    @keyframes moveBackground {
+      from { background-position: 0 0; }
+      to { background-position: 100px 100px; }
+    }
+
+    .container {
+      background: rgba(15, 25, 35, 0.85);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px var(--color-neon-blue);
+      width: 90%;
+      max-width: 1600px;
+      border: 2px solid var(--color-neon-blue);
+      position: relative;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 30px;
+      color: var(--color-neon-blue);
+      text-align: center;
+      margin-bottom: 20px;
+      animation: glitch 0.5s infinite alternate;
+    }
+
+    @keyframes glitch {
+      0% { text-shadow: 2px 2px var(--color-glitch1), -2px -2px var(--color-glitch2); }
+      100% { text-shadow: -2px -2px var(--color-glitch1), 2px 2px var(--color-glitch2); }
+    }
+
+    h2 {
+      color: var(--color-neon-blue);
+      border-bottom: 2px solid var(--color-neon-blue);
+      margin-bottom: 15px;
+      padding-bottom: 5px;
+      text-align: left;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid var(--color-neon-blue);
+      border-radius: 5px;
+      background: var(--color-medium);
+      color: var(--color-text-light);
+      font-size: 14px;
+      margin-bottom: 20px;
+      outline: none;
+      transition: all 0.3s ease-in-out;
+    }
+
+    select:hover {
+      box-shadow: 0 0 10px var(--color-neon-blue);
+    }
+
+    .device-usage {
+      max-height: 600px;
+      overflow-y: auto;
+      border-radius: 8px;
+      background-color: var(--color-medium);
+      border: 2px solid var(--color-neon-blue);
+    }
+
+    .device-usage table {
+      width: 100%;
+      border-collapse: collapse;
+      color: var(--color-text-light);
+    }
+
+    .device-usage th,
+    .device-usage td {
+      border: 1px solid var(--color-neon-blue);
+      padding: 12px;
+      text-align: left;
+    }
+
+    .device-usage th {
+      background-color: var(--color-dark);
+      color: var(--color-neon-blue);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-weight: bold;
+    }
+
+    .device-usage tr:nth-child(even) {
+      background-color: rgba(16, 32, 48, 0.5);
+    }
+
+    .device-usage tr:hover {
+      background-color: rgba(0, 217, 255, 0.1);
+    }
+
+    /* Custom Scrollbar */
+    .device-usage::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .device-usage::-webkit-scrollbar-track {
+      background: var(--color-dark);
+    }
+
+    .device-usage::-webkit-scrollbar-thumb {
+      background: var(--color-neon-blue);
+      border-radius: 4px;
+    }
+
+    .device-usage::-webkit-scrollbar-thumb:hover {
+      background: #00b8e6;
+    }
+
+    /* Scanlines Effect */
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.02),
+        rgba(255, 255, 255, 0.02) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      animation: scanlines 0.3s linear infinite;
+    }
+
+    @keyframes scanlines {
+      from { transform: translateY(0); }
+      to { transform: translateY(2px); }
+    }
+
+    /* Back Button Styles */
+    .back-button {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 10px;
+      color: var(--color-neon-blue);
+      text-decoration: none;
+      padding: 8px 15px;
+      border: 1px solid var(--color-neon-blue);
+      border-radius: 3px;
+      background: transparent;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 8px var(--color-neon-blue);
+    }
+
+    .back-button:hover {
+      background: var(--color-neon-blue);
+      color: var(--color-dark);
+      box-shadow: 0 0 20px var(--color-neon-blue);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="text-align: left;">
+      <a href="javascript:history.back()" class="back-button">← BACK</a>
+    </div>
+    <h1>Android Data Extraction</h1>
+    <h2>Select a Category:</h2>
+    <select id="categorySelect" onchange="filterData()">
+      <option value="all">ALL</option>
+      <option value="passwords">Passwords and Account Information</option>
+      <option value="system">System Settings</option>
+      <option value="communications">Communications</option>
+      <option value="multimedia">Multimedia</option>
+      <option value="browser">Browser Activity</option>
+      <option value="network">Network Connections</option>
+      <option value="Syncing">Syncing</option>
+      <option value="Location">Location</option>
+      <option value="Application_usage">Application Usage</option>
+      <option value="nativeApplications">Native Applications</option>
+      <option value="connections">Connections</option>
+      <option value="applicationAnalysis">Application Analysis</option>
+      <option value="settingsAndNotifications">Settings and Notifications</option>
+      <option value="logging">Logging</option>
+      
+    </select>
+
+    <div class="device-usage">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>Path</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data rows will be inserted here based on selected category -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const data = {
+      passwords: [
+        { path: '/data/com.android.email/databases/EmailProvider.db', description: 'Email accounts, 3rd party app data, and messages associated with Email notifications' },
+        { path: '/data/com.android.providers.contacts/databases/contacts2.db', description: 'Login info' },
+        { path: '/data/com.android.providers.settings/*', description: 'Username and passwords' },
+        // Add other password-related data here...
+      ],
+      system: [
+        { path: '/data/com.google.android.gms/shared_prefs/*', description: 'Preference files' },
+        { path: '/system/recent_images/*.png', description: 'Application snapshots' },
+        { path: '/system/users/0/settings_global.xml', description: 'Global settings' },
+        // Add other system-related data here...
+      ],
+      communications: [
+        { path: '/data/com.android.providers.contacts/databases/calllog.db', description: 'Call logs (From Android 7)' },
+        { path: '/data/com.android.providers.telephony/databases/mmssms.db', description: 'SMS/MMS' },
+        { path: '/data/com.google.android.apps.messaging/databases/bugle_db', description: 'RCS/Android Messages' },
+        // Add other communications-related data here...
+      ],
+      multimedia: [
+        { path: '/data/com.android.providers.media/databases/external*.db', description: 'Traces to SD card used in the device' },
+        { path: '/data/media/0/DCIM/Camera/*', description: 'Photos' },
+        { path: '/data/com.samsung.cmh/databases/cmh.db', description: 'Camera Photo - Samsung Devices' },
+        // Add other multimedia-related data here...
+      ],
+      browser: [
+        { path: '/data/com.android.browser/app_databases/*', description: 'Internet History' },
+        { path: '/data/com.android.browser/databases/browser2.db', description: 'Internet History' },
+        { path: '/data/com.android.email/webviewCache.db', description: 'Internet History' },
+        // Add other browser-related data here...
+      ],
+      network: [
+        { path: '/data/com.android.connectivity.metrics/databases/events.db', description: 'USB, Bluetooth, NFC and other connects - Acquisition connection tracked here' },
+        { path: '/data/com.google.android.gms/databases/herrevad', description: 'Wireless network and MAC addresses' },
+        { path: '/data/com.google.android.locations/files/cache.cell', description: 'Cellular and WiFi' },
+        { path: '/data/com.google.android.locations/files/cache.wif', description: 'Cellular and WiFi' },
+        { path: '/misc/wifi/WifiConfigStore.xml', description: 'Wireless network' },
+        // Add other network-related data here...
+      ],
+      Syncing: [
+        { path: '/data/com.google.android.apps.docs.editors.docs/databases/*', description: 'Google Docs' },
+        { path: '/data/com.google.android.apps.docs.editors.sheets/databases/*', description: 'Google Docs' },
+        { path: '/data/com.google.android.apps.docs.editors.slides/databases/*', description: 'Google Docs' },
+        { path: '/data/com.google.android.apps.docs/databases/*', description: 'Google Docs' },
+        { path: '/data/com.google.android.apps.genie.geniewidget/databases/newsweather.db', description: 'Sync activity' },
+        { path: '/data/com.google.android.gms/databases/peoplelog.db', description: 'Sync activity - contacts' },
+        { path: '/data/com.google.android.gms/shared_prefs/com.google.android.gms.auth.authzen.cryptauth.SyncManager.proximity_features.xml', description: 'Sync activity' },
+        { path: '/system/sync/accounts.xml', description: 'Synced Accounts' },
+      ],
+      Location: [
+        { path: '/data/com.google.android.apps.maps/databases/da_destination_history', description: 'Maps' },
+        { path: '/data/com.google.android.apps.maps/databases/gmm_storage.db', description: 'Search history Maps' },
+        { path: '/data/com.google.android.apps.maps/databases/search_history.db', description: 'Maps' },
+        { path: '/data/com.google.android.apps.maps/databases/gmm_sync.db', description: 'Syncing' },
+        { path: '/data/com.sec.android.daemonapp/db/weatherClock', description: 'Location artifacts' },
+        { path: '/Media/0/DCIM/Camera', description: 'EXIF data with location info' },
+        { path: '/data/data/com.samsung.android.providers.media/databases/media.db', description: 'GPS coordinates of all items in Photo Gallery' },
+        { path: '/data/data/com.sec.android.daemonapp/databases/WeatherClock', description: 'Current Location, Weather Artifacts, Time Zone Information etc.' },
+        { path: '/data/data/com.samsung.storyservice/databases/dme.db', description: 'GPS coordinates of where the photo was captured' },
+      ],
+      Application_usage: [
+        { path: '/app/*', description: 'APK files for installed applications' },
+        { path: '/dalvik-cache', description: 'dex/.oat/.art files for installed applications' },
+        { path: '/data/"Application Folder"', description: 'Application Data Files' },
+        { path: '/data/com.android.vending/databases/data_usage.db', description: 'Application traces' },
+        { path: '/data/com.android.vending/databases/frosting.db', description: 'Application traces' },
+        { path: '/data/com.android.vending/databases/install_queue.db', description: 'Application traces' },
+        { path: '/data/com.android.vending/databases/library.db', description: 'Application traces' },
+        { path: '/data/com.android.vending/databases/localappstate.db', description: 'Application traces' },
+        { path: '/data/com.android.vending/databases/notification_cache', description: 'Application traces' },
+        { path: '/data/com.android.vending/databases/package_verification.db', description: 'Application traces' },
+        { path: '/data/com.android.vending/databases/suggestions.db', description: 'Application traces' },
+        { path: '/data/com.android.vending/databases/verify_apps.db', description: 'Application traces' },
+        { path: '/data/com.google.android.gms/databases/config.db', description: 'Application traces' },
+        { path: '/data/com.google.android.gms/databases/gass.db', description: 'Application traces' },
+        { path: '/data/com.google.android.gms/databases/gcm_registrar.db', description: 'Application traces' },
+        { path: '/data/com.google.android.gms/databases/google_app_measurement.db', description: 'Application traces' },
+        { path: '/data/com.google.android.gms/shared_prefs/batterystats.xml', description: 'Battery Usage Stats - Contains Application Usage information' },
+        { path: '/data/com.google.android.googlequicksearchbox/*', description: 'Google App searches, installed applications and more' },
+        { path: '/data/com.samsung.android.providers.context.databases.ContextLog_0.db', description: 'Application traces (Samsung devices)' },
+        { path: '/data/com.sec.android.app.launcher/databases/launcher.db', description: 'Application artifacts (even after deleted)' },
+        { path: '/data/data/com.google.android.gms/files/batterystatsdumpsystask.gz', description: 'Battery Usage Stats - Contains Application Usage information' },
+        { path: '/system/appops.xml', description: 'Application permissions' },
+        { path: '/system/batterystats.bin', description: 'Battery Usage Stats - Contains Application Usage information' },
+        { path: '/system/batterystats-checkin.bin', description: 'Battery Usage Stats - Contains Application Usage information' },
+        { path: '/system/batterystats-daily.xml', description: 'Battery Usage Stats - Contains Application Usage information' },
+        { path: '/system/dmappmgr.db', description: 'Application Usage' },
+        { path: '/system/job/jobs.xml', description: 'Application Usage' },
+        { path: '/system/notification_log.db', description: 'Application notifications' },
+        { path: '/system/packages.list', description: 'Application permissions and metadata' },
+        { path: '/system/packages.xml', description: 'Application permissions' },
+        { path: '/system/usagestats/0/*', description: 'Application Usage Stats' },
+        { path: '/system/users/0/app_idle_stats.xml', description: 'Application Usage' },
+        { path: '/system_ce/0/recent_images/*.png', description: 'Application snapshots' },
+        { path: '/system_ce/0/recent_tasks/*.xml', description: 'Recent Tasks' },
+        { path: '/log/sdp_log', description: 'Valid and invalid lockscreen code attempts' }
+      ],
+      nativeApplications: [
+        { path: '/data/com.android.providers.calendar/databases/calendar.db', description: 'Calendar Items' },
+        { path: '/data/com.android.providers.contacts/databases/contacts2.db', description: 'Contacts' },
+        { path: '/data/com.android.providers.contacts/databases/contacts2.db', description: 'Call Logs' },
+        { path: '/data/com.android.providers.contacts/databases/calllog.db', description: 'Call Logs' },
+        { path: '/data/com.android.providers.downloads/databases/downloads.db', description: 'Downloads' },
+        { path: '/data/com.google.android.gms/databases/icing_contacts.db', description: 'Contacts' },
+        { path: '/data/com.google.android.gms/databases/icing_mmssms.db', description: 'MMS/SMS' },
+        { path: '/data/com.google.android.gms/databases/ipa_mmssms.db', description: 'MMS/SMS' },
+        { path: '/data/com.google.android.gms/databases/android_pay', description: 'Android Pay' },
+        { path: '/data/com.google.android.gms/databases/pluscontacts.db', description: 'Google+ Contacts' }
+      ],
+      connections: [
+        { path: 'Dump/data/misc/bluedroid/bt_config.conf', description: 'Bluetooth configuration data' },
+        { path: 'Dump/data/data/com.google.android.gm/shared_prefs/Gmail.xml', description: 'Gmail account information' },
+        { path: 'Dump/data/data/com.google.android.gm/databases/bigTopDataDB.-1285600966', description: 'Database that contains emails' },
+        { path: '/log/wifi/iwc/iwc_dump.txt', description: 'Tracks wireless networks, frequency of connection and lost connection status' },
+        { path: '/log/netstats', description: 'Network configuration and activity' }
+      ],
+      applicationAnalysis: [
+        { path: 'Dump/data/data/com.android.chrome/app_chrome/Default/History', description: 'Chrome web history' },
+        { path: 'Dump/data/data/com.duckduckgo.mobile.android/databases/app.db', description: 'Duck Duck Go application database' },
+        { path: 'Dump/data/data/com.twitter.android/databases/1378525099184291843-61.db', description: 'Twitter database' },
+        { path: 'Dump/data/data/com.<appname>/databases/<something>.db', description: 'Applications database' }
+      ],
+      settingsAndNotifications: [
+        { path: 'Dump/data/system/users/0/settings_secure.xml', description: 'File that stores the Notification settings' }
+      ],
+      logging: [
+        { path: 'Dump/data/log/batterystats', description: 'Logs on battery' }
+      ]
+      
+    };
+
+    function filterData() {
+      const category = document.getElementById('categorySelect').value;
+      const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+      tableBody.innerHTML = '';
+
+      let dataToDisplay = [];
+
+      if (category === 'all') {
+        dataToDisplay = [
+          ...data.passwords,
+          ...data.system,
+          ...data.communications,
+          ...data.multimedia,
+          ...data.browser,
+          ...data.network,
+          ...data.Syncing,
+          ...data.Location,
+          ...data.Application_usage,
+          ...data.nativeApplications,
+          ...data.connections,
+          ...data.applicationAnalysis,
+          ...data.settingsAndNotifications,
+          ...data.logging
+
+        ];
+      } else {
+        dataToDisplay = data[category];
+      }
+
+      dataToDisplay.forEach(item => {
+        const row = document.createElement('tr');
+        const cell1 = document.createElement('td');
+        cell1.textContent = item.path;
+        const cell2 = document.createElement('td');
+        cell2.textContent = item.description;
+        row.appendChild(cell1);
+        row.appendChild(cell2);
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Initialize table with all data
+    window.onload = () => filterData();
+  </script>
+</body>
+</html>

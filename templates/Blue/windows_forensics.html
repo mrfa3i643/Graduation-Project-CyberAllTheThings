@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Windows Forensics</title>
+  <style>
+    /* --- Copied styles from Android.html --- */
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+    :root {
+      --color-dark: #050A0E;
+      --color-medium: #0D1B2A;
+      --color-light: #1B263B;
+      --color-neon-blue: #00D9FF;
+      --color-text-light: #c0c7d6;
+      --color-glitch1: #007BFF;
+      --color-glitch2: #00FFFF;
+    }
+    * { font-family: 'Fira Code', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: var(--color-dark);
+      color: var(--color-text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(rgba(0, 217, 255, 0.1), rgba(0, 217, 255, 0.05)), url('https://www.transparenttextures.com/patterns/3px-tile.png');
+      z-index: -1;
+      animation: moveBackground 5s linear infinite;
+    }
+    @keyframes moveBackground { from { background-position: 0 0; } to { background-position: 100px 100px; } }
+    .container {
+      background: rgba(15, 25, 35, 0.85);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px var(--color-neon-blue);
+      width: 90%;
+      max-width: 1600px;
+      border: 2px solid var(--color-neon-blue);
+      position: relative;
+      overflow: hidden;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    h1 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 30px;
+      color: var(--color-neon-blue);
+      text-align: center;
+      margin-bottom: 20px;
+      animation: glitch 0.5s infinite alternate;
+    }
+    @keyframes glitch {
+      0% { text-shadow: 2px 2px var(--color-glitch1), -2px -2px var(--color-glitch2); }
+      100% { text-shadow: -2px -2px var(--color-glitch1), 2px 2px var(--color-glitch2); }
+    }
+    h2 {
+      color: var(--color-neon-blue);
+      border-bottom: 2px solid var(--color-neon-blue);
+      margin-bottom: 15px;
+      padding-bottom: 5px;
+      text-align: left;
+    }
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid var(--color-neon-blue);
+      border-radius: 5px;
+      background: var(--color-medium);
+      color: var(--color-text-light);
+      font-size: 14px;
+      margin-bottom: 20px;
+      outline: none;
+      transition: all 0.3s ease-in-out;
+    }
+    select:hover { box-shadow: 0 0 10px var(--color-neon-blue); }
+    .device-usage {
+      max-height: 600px;
+      overflow-y: auto;
+      border-radius: 8px;
+      background-color: var(--color-medium);
+      border: 2px solid var(--color-neon-blue);
+    }
+    .device-usage table {
+      width: 100%;
+      border-collapse: collapse;
+      color: var(--color-text-light);
+    }
+    .device-usage th, .device-usage td {
+      border: 1px solid var(--color-neon-blue);
+      padding: 12px;
+      text-align: left;
+    }
+    .device-usage th {
+      background-color: var(--color-dark);
+      color: var(--color-neon-blue);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-weight: bold;
+    }
+    .device-usage tr:nth-child(even) { background-color: rgba(16, 32, 48, 0.5); }
+    .device-usage tr:hover { background-color: rgba(0, 217, 255, 0.1); }
+    .device-usage::-webkit-scrollbar { width: 8px; }
+    .device-usage::-webkit-scrollbar-track { background: var(--color-dark); }
+    .device-usage::-webkit-scrollbar-thumb { background: var(--color-neon-blue); border-radius: 4px; }
+    .device-usage::-webkit-scrollbar-thumb:hover { background: #00b8e6; }
+    .scanlines {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.02),
+        rgba(255, 255, 255, 0.02) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      animation: scanlines 0.3s linear infinite;
+    }
+    @keyframes scanlines { from { transform: translateY(0); } to { transform: translateY(2px); } }
+    .back-button {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 10px;
+      color: var(--color-neon-blue);
+      text-decoration: none;
+      padding: 8px 15px;
+      border: 1px solid var(--color-neon-blue);
+      border-radius: 3px;
+      background: transparent;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 8px var(--color-neon-blue);
+    }
+    .back-button:hover {
+      background: var(--color-neon-blue);
+      color: var(--color-dark);
+      box-shadow: 0 0 20px var(--color-neon-blue);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="text-align: left;">
+      <a href="javascript:history.back()" class="back-button">← BACK</a>
+    </div>
+    <h1>Windows Forensics</h1>
+    <h2>Select a Category:</h2>
+    <select id="mainCategorySelect" onchange="updateSubcategories()">
+      <option value="all">ALL</option>
+      <option value="system">System Information and User Information</option>
+      <option value="usage">Usage or knowledge of files/folders/App</option>
+      <option value="evidenceofexecution">Evidence of Execution</option>
+      <option value="network">Network Artifacts</option>
+      <option value="ntfs">New Technology File System (NTFS)</option>
+      <option value="browser">Browser Artifacts</option>
+      <option value="usb">USB Devices</option>
+      <option value="eventlogs">Event Logs</option>
+      <option value="other">Other</option>
+      
+    </select>
+    <select id="subCategorySelect" onchange="renderArtifacts()" style="margin-top:10px;">
+      <!-- Subcategories will be populated here -->
+    </select>
+    <div style="
+      text-align:left;
+      color:var(--color-neon-blue);
+      font-weight:bold;
+      margin: 18px 0 18px 0;
+      font-size: 1.5em;
+      letter-spacing: 1px;
+      padding-left: 2px;
+      text-shadow: 0 0 8px var(--color-neon-blue);
+    ">Result:</div>
+    <div class="device-usage" style="margin-top:20px;">
+      <table id="resultTable" style="width:100%; margin-bottom:20px;">
+        <thead>
+          <tr>
+            <th>Subcategory</th>
+            <th>Path / Artifact</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody id="resultTableBody">
+          <!-- Artifacts will be rendered here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    // Data structure: main category -> subcategory -> artifacts[]
+    const data = {
+      system: {
+        "OS Version, Installed Date": [
+          { path: 'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion', description: 'Contains OS version and installation date.' }
+        ],
+        "Computer Name": [
+          { path: 'SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName', description: 'Stores the computer name.' }
+        ],
+        "Hardware Specification": [
+          { path: 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', description: 'Contains hardware specification and environment variables.' }
+        ],
+        "Time Zone Information": [
+          { path: 'SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation', description: 'Stores time zone configuration.' }
+        ],
+        "Startup and Shutdown": [
+          { path: 'System\\ControlSet001\\Control\\Windows', description: 'Tracks system startup and shutdown information.' }
+        ],
+        "User Account Info, UI, and System Behavior (Login/Logoff)": [
+          { path: 'Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\', description: 'User account information, user interfaces, and system behavior during login and logoff.' }
+        ],
+        "Last Logged-on User": [
+          { path: 'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\WinLogon', description: 'Last logged-on user.' },
+          { path: 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI\\LastLoggedOnUser', description: 'Last logged-on user.' }
+        ],
+        "Services": [
+          { path: 'SYSTEM\\CurrentControlSet\\Services', description: 'Contains information about system services.' }
+        ],
+        "SAM Hive and User Information": [
+          { path: 'SAM\\Domains\\Account\\Users', description: 'The SAM hive contains user account information, login information, and group information. Stores most of the user\'s data.' }
+        ]
+      },
+      network: {
+        "Physical Network Cards Connected": [
+          { path: 'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\NetworkCards', description: 'Lists physical network cards connected to the system.' }
+        ],
+        "Network Interfaces and Past Networks": [
+          { path: 'SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces', description: 'Network interfaces and their configuration.' }
+        ],
+        "Discovering Connections History": [
+          { path: 'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\NetworkList\\Signatures\\Unmanaged', description: 'Past networks (unmanaged) the machine was connected to.' },
+          { path: 'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\NetworkList\\Signatures\\Managed', description: 'Past networks (managed) the machine was connected to.' },
+          { path: 'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\NetworkList\\Profiles', description: 'Stores information about all WLANs that connected to the device. Useful for geo-location (see wigle.net).' }
+        ],
+        "Network Shares": [
+          { path: 'SYSTEM\\ControlSet001\\Services\\LanmanServer\\Shares', description: 'Network shares object.' }
+        ]
+      },
+      browser: {
+        "Chrome": [
+          { path: 'C:\\Users\\<username>\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\History', description: 'Chrome Browsing History' }
+        ],
+        "Edge": [
+          { path: 'C:\\Users\\<username>\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\History', description: 'Edge Browsing History' }
+        ],
+        "Firefox": [
+          { path: 'C:\\Users\\<username>\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\<profile>\\places.sqlite', description: 'Firefox Browsing History' }
+        ]
+      },
+      usb: {
+        "Device Identification": [
+          { path: 'SYSTEM\\CurrentControlSet\\Enum\\USBSTOR', description: 'Tracks USB keys plugged into the system. Stores vendor id, product id, version, and connection times.' },
+          { path: 'SYSTEM\\CurrentControlSet\\Enum\\USB', description: 'Tracks USB devices and their properties.' },
+          { path: 'SYSTEM\\ControlSet001\\Enum\\SWD\\WPDBUSENUM', description: 'Tracks Windows Portable Devices.' },
+          { path: 'SYSTEM\\ControlSet001\\Control\\DeviceClasses', description: 'Tracks device classes, GUIDs, serial numbers, timestamps, types, and names.' },
+          { path: 'SYSTEM\\MountedDevices', description: 'Tracks mounted devices, device name, type, vendor ID, product ID, and serial number.' }
+        ],
+        "First/Last Times": [
+          { path: 'SYSTEM\\CurrentControlSet\\Enum\\USBSTOR\\Ven_Prod_Version\\USBSerial#\\Properties\\{83da6326-97a6-4088-9453-a19231573b29}\\0064', description: 'First connection time.' },
+          { path: 'SYSTEM\\CurrentControlSet\\Enum\\USBSTOR\\Ven_Prod_Version\\USBSerial#\\Properties\\{83da6326-97a6-4088-9453-a19231573b29}\\0066', description: 'Last connection time.' },
+          { path: 'SYSTEM\\CurrentControlSet\\Enum\\USBSTOR\\Ven_Prod_Version\\USBSerial#\\Properties\\{83da6326-97a6-4088-9453-a19231573b29}\\0067', description: 'Last removal time.' }
+        ],
+        "USB Device Volume Name": [
+          { path: 'SOFTWARE\\Microsoft\\Windows Portable Devices\\Devices', description: 'Device name of the connected drive, last write time, VID, PID, serial number, description, and port.' },
+          { path: 'HKLM\\SYSTEM\\ControlSet001\\Enum\\USB', description: 'Contains VID, PID, serial number, and last write time.' }
+        ],
+        "USBSTOR Details": [
+          { path: 'SYSTEM\\CurrentControlSet\\Enum\\USBSTOR', description: 'USB data, timestamp of last write, device-related information, and serial number shapes.' }
+        ],
+        "WPDBUSENUM Details": [
+          { path: 'SYSTEM\\ControlSet001\\Enum\\SWD\\WPDBUSENUM', description: 'Service name and friendly name.' }
+        ],
+        "DeviceClasses Details": [
+          { path: 'SYSTEM\\ControlSet001\\Control\\DeviceClasses', description: 'GUID folder, serial number, timestamp, type, and name.' }
+        ],
+        "MountedDevices Details": [
+          { path: 'SYSTEM\\MountedDevices', description: 'Device name, device data (type, name, vendor ID, product ID, serial number).' }
+        ],
+        "Other Registry Keys": [
+          { path: 'SOFTWARE\\Microsoft\\Windows Portable Devices\\Devices', description: 'Other relevant device information.' },
+          { path: 'SOFTWARE\\Microsoft\\Windows Search\\VolumeInfoCache', description: 'Volume info cache for devices.' },
+          { path: 'Amcache Hive\\Root\\InventoryDevicePnp', description: 'Amcache device inventory.' }
+        ],
+        "Connected Devices (Event Logs)": [
+          { path: 'Event ID 6416', description: 'Event log for connected devices.' }
+        ],
+        "Which user accessed the device?": [
+          { path: 'SYSTEM\\MountedDevices', description: 'Extract GUID for USB.' },
+          { path: 'HKEY_CURRENT_USER(NTUSER.dat)\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\MountPoints2', description: 'User perspective: MountPoints2.' },
+          { path: 'Software\\Microsoft\\Windows Search\\VolumeInfoCache', description: 'Objects the user accessed on a device.' },
+          { path: 'LNK files', description: 'Filter for drive letter in LNK files to map user-to-device (use TimeLine Explorer).' }
+        ],
+        "Duck-Decoder": [
+          { path: 'Duck-Decoder', description: 'https://github.com/JPaulMora/Duck-Decoder/tree/master' },
+          { path: 'Duck Toolkit', description: 'Payload Generator, Payload Encoder, Payload Decoder - https://payloadstudio.com/login/' }
+        ]
+      },
+      eventlogs: {
+        "Event Logs": [
+          { path: 'C:\\Windows\\System32\\winevt\\Logs\\', description: 'Windows Event Logs (Application, Security, System, etc.)' }
+        ]
+      },
+      other: {
+        "Prefetch": [
+          { path: 'C:\\Windows\\Prefetch\\', description: 'Prefetch files (program execution evidence)' }
+        ],
+        "Jump Lists": [
+          { path: 'C:\\Users\\<username>\\AppData\\Roaming\\Microsoft\\Windows\\Recent\\AutomaticDestinations\\', description: 'Jump Lists (recently accessed files)' }
+        ],
+        "Memory Artifacts": [
+          { path: 'C:\\Windows\\MEMORY.DMP', description: 'System memory dump' },
+          { path: 'C:\\Users\\<username>\\AppData\\Local\\Temp\\', description: 'Temporary files (may contain memory artifacts)' },
+          { path: 'C:\\pagefile.sys', description: 'Pagefile (may contain remnants of memory)' },
+          { path: 'C:\\hiberfil.sys', description: 'Hibernation file (may contain memory artifacts)' }
+        ]
+      },
+      evidenceofexecution: {
+        "Windows Services": [
+          { path: 'CurrentControlSet\\Services', description: 'Windows services registry key. [Reference](https://www.socinvestigation.com/windows-service-creation-and-malware-detection-methods/)' },
+          { path: '4697 (Security.evtx)', description: 'Generated when a service is installed. Contains executable path, service name, and account that installed the service.' },
+          { path: '7034 (System.evtx)', description: 'Generated when a service crashes.' },
+          { path: '7035 (System.evtx)', description: 'Generated when the OS sends a start/stop control signal to the service.' },
+          { path: '7036 (System.evtx)', description: 'Generated when the service is actually started/stopped.' },
+          { path: '7040 (System.evtx)', description: 'Generated when the start type of a service is changed (auto, manual, delayed, disabled).' },
+          { path: '7045 (System.evtx)', description: 'Similar to 4697 but does not include the account that installed the service.' }
+        ],
+        "Windows Timeline": [
+          { path: 'C:\\Users\\<user>\\AppData\\Local\\ConnectedDevicesPlatform\\L.<user>\\ActivitiesCache.db', description: "A list of the user's activities to make it easy for the user to access open applications he recently used. Tool: WxTCMD (https://ericzimmerman.github.io/#!index.md)" }
+        ],
+        "Autorun Applications": [
+          { path: 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run', description: 'Autorun applications.' },
+          { path: 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce', description: 'Autorun applications.' },
+          { path: 'SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run', description: 'Autorun applications (64-bit).' },
+          { path: 'SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\RunOnce', description: 'Autorun applications (64-bit).' },
+          { path: 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\policies\\Explorer\\Run', description: 'Autorun applications.' },
+          { path: 'NTUSER.DAT\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', description: 'Autorun applications (per user).' },
+          { path: 'NTUSER.DAT\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce', description: 'Autorun applications (per user).' }
+        ],
+        "UserAssist": [
+          { path: 'NTUSER.DAT\\Software\\Microsoft\\Windows\\Currentversion\\Explorer\\UserAssist', description: 'Tracks applications launched by the user using Windows Explorer. Contains: programs launched, time of launch, execution count, app durations. Tool: https://www.downloadcrew.com/download/25993/userassist' },
+          { path: '{CEBFF5CD-ACE2-4F4F-9178-9926F41749EA}', description: 'GUID for executables.' },
+          { path: '{F4E57C4B-2036-45F0-A9AB-443BCFE33D9F}', description: 'GUID for shortcuts.' }
+        ],
+        "ShimCache": [
+          { path: 'SYSTEM\\CurrentControlSet\\Control\\Session Manager\\AppCompatCache\\AppCompatCache', description: 'ShimCache (AppCompatCache) stores info about executables for compatibility. Contains: file name, file size, last modified time. Tool: AppCompatCacheParser.' },
+          { path: 'Example', description: 'AppCompatCacheParser.exe -f "C:\\Users\\refai\\Downloads\\challenge\\Windows\\system32\\config\\SYSTEM" --csv here' }
+        ],
+        "AmCache.hve": [
+          { path: 'C:\\Windows\\appcompat\\Programs\\Amcache.hve', description: 'AmCache hive stores info about installed/executed files: name, version, location, SHA1, times. Tool: AmcacheParser (https://ericzimmerman.github.io/#!index.md)' },
+          { path: 'Example', description: 'AmcacheParser.exe -f "C:\\Users\\refai\\Downloads\\challenge\\Windows\\appcompat\\Programs\\Amcache.hve" --csv here' }
+        ],
+        "BAM/DAM": [
+          { path: 'SYSTEM\\CurrentControlSet\\Services\\bam\\UserSettings\\{SID}', description: 'Background Activity Moderator (BAM) - last run programs, full paths, last execution time.' },
+          { path: 'SYSTEM\\CurrentControlSet\\Services\\dam\\UserSettings\\{SID}', description: 'DAM - Device Activity Moderator.' }
+        ],
+        "Prefetch & SuperFetch": [
+          { path: 'C:\\Windows\\Prefetch', description: 'Prefetch files (.pf) store info about recently executed programs. Tool: PECmd (https://ericzimmerman.github.io/#!index.md)' }
+        ],
+        "SRUM (System Resource Usage Monitor)": [
+          { path: 'C:\\Windows\\System32\\sru\\SRUDB.DAT', description: 'Tracks system resource usage, app usage, energy, network, etc. Tool: SrumECmd (https://ericzimmerman.github.io/#!index.md). Repair with: esentutl /p C:\\Windows\\System32\\sru\\SRUDB.dat' }
+        ],
+        "Microsoft Office Alerts": [
+          { path: 'OAlerts.evtx', description: 'Custom event log generated by Office. Contains dialog text, file saves, email deletions.' }
+        ],
+        "Scheduled Tasks": [
+          { path: 'C:\\Windows\\Tasks', description: 'Directory for scheduled tasks.' },
+          { path: 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache', description: 'Registry for scheduled tasks.' }
+        ],
+        "MUICache": [
+          { path: 'USERCLASS.dat\\Local Settings\\Software\\Microsoft\\Windows\\Shell\\MuiCache', description: 'Per-user artifact of execution for GUI-based programs.' },
+          { path: 'NTUSER.DAT\\Software\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\Shell\\MuiCache', description: 'Per-user artifact of execution for GUI-based programs.' },
+          { path: 'NTUSER.DAT\\Software\\Classes\\Local Settings\\MuiCache', description: 'Per-user artifact of execution for GUI-based programs.' }
+        ],
+        "Sysinternals Tools Registry Path": [
+          { path: 'NTUSER.DAT\\Sotware\\Sysinternals\\*', description: 'Sysinternals tools registry path.' }
+        ]
+      },
+      ntfs: {
+        "$MFT Master File Table": [
+          { path: '$MFT', description: 'Contains metadata about files and folders. Tools: GUI: https://www.r-studio.com/ , CMD: https://github.com/EricZimmerman/MFTECmd (export to CSV and load in Timeline Explorer: https://ericzimmerman.github.io/#!index.md)' }
+        ],
+        "$UsnJrnl (Update Sequence Number Journal)": [
+          { path: '$Extend\\$USNJrnl', description: 'Monitors high-level file/folder changes (creation, deletion, renaming). $USNJrnl contains $J (main data) and $Max.' }
+        ],
+        "$LogFile": [
+          { path: '$LogFile', description: 'Monitors low-level changes to files/folders for NTFS resilience. Tool: NTFS Log Tracker (https://sites.google.com/site/forensicnote/ntfs-log-tracker) can parse $LogFile, $usnjrnl, and $MFT together.' }
+        ],
+        "$I30 INDX": [
+          { path: '$I30', description: 'Updated each time folder content changes (e.g., file deletion). Tools: MFTEcmd or INDXRipper (https://github.com/harelsegev/INDXRipper)' }
+        ],
+        "Windows Search Database": [
+          { path: 'C:\\ProgramData\\Microsoft\\Search\\Data\\Applications\\Windows\\Windows.edb', description: 'Windows Search database used to recover deleted files. Tool: WinSearchDBAnalyzer (https://moaistory.blogspot.com/2018/10/winsearchdbanalyzer.html)' }
+        ],
+        "LNK Files": [
+          { path: 'C:\\Users\\<User>\\Appdata\\Roaming\\Microsoft\\Windows\\Recent', description: 'Common LNK file location.' },
+          { path: 'C:\\Users\\<User>\\Desktop', description: 'Common LNK file location.' },
+          { path: 'C:\\Users\\<User>\\AppData\\Roaming\\Microsoft\\Office\\Recent\\', description: 'Common LNK file location.' },
+          { path: 'C:\\Users\\<User>\\Downloads', description: 'Common LNK file location.' },
+          { path: 'Tool: LECmd', description: 'https://ericzimmerman.github.io/#!index.md' }
+        ]
+      }
+    };
+
+    function updateSubcategories() {
+      const mainCategory = document.getElementById('mainCategorySelect').value;
+      const subCategorySelect = document.getElementById('subCategorySelect');
+      subCategorySelect.innerHTML = '';
+
+      // Add "ALL" option to subcategories
+      const allOption = document.createElement('option');
+      allOption.value = 'all';
+      allOption.textContent = 'ALL';
+      subCategorySelect.appendChild(allOption);
+
+      let subcategories = [];
+      if (mainCategory === 'all') {
+        // Collect all unique subcategories from all main categories
+        const subcatSet = new Set();
+        Object.values(data).forEach(subcatObj => {
+          Object.keys(subcatObj).forEach(subcat => subcatSet.add(subcat));
+        });
+        subcategories = Array.from(subcatSet);
+      } else {
+        subcategories = Object.keys(data[mainCategory]);
+      }
+
+      subcategories.forEach(subcat => {
+        const option = document.createElement('option');
+        option.value = subcat;
+        option.textContent = subcat;
+        subCategorySelect.appendChild(option);
+      });
+      renderArtifacts();
+    }
+
+    function renderArtifacts() {
+      const mainCategory = document.getElementById('mainCategorySelect').value;
+      const subCategory = document.getElementById('subCategorySelect').value;
+      const tableBody = document.getElementById('resultTableBody');
+      tableBody.innerHTML = '';
+
+      let toDisplay = {};
+
+      if (mainCategory === 'all') {
+        // All main categories
+        Object.entries(data).forEach(([mainCat, subcats]) => {
+          Object.entries(subcats).forEach(([subcat, artifacts]) => {
+            if (subCategory === 'all' || subCategory === subcat) {
+              if (!toDisplay[subcat]) toDisplay[subcat] = [];
+              toDisplay[subcat] = toDisplay[subcat].concat(artifacts);
+            }
+          });
+        });
+      } else {
+        // Specific main category
+        if (subCategory === 'all') {
+          Object.entries(data[mainCategory]).forEach(([subcat, artifacts]) => {
+            toDisplay[subcat] = artifacts;
+          });
+        } else if (data[mainCategory][subCategory]) {
+          toDisplay[subCategory] = data[mainCategory][subCategory];
+        }
+      }
+
+      // Helper to convert URLs in text to clickable links
+      function linkify(text) {
+        // Regex to match URLs
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        // Replace URLs with anchor tags
+        return text.replace(urlRegex, url => {
+          // Use "Download" or "Reference" as link text depending on context
+          if (text.toLowerCase().includes('reference')) {
+            return `<a href="${url}" target="_blank" style="color:var(--color-neon-blue);text-decoration:underline;">Reference</a>`;
+          }
+          return `<a href="${url}" target="_blank" style="color:var(--color-neon-blue);text-decoration:underline;">Download</a>`;
+        });
+      }
+
+      // Render all selected subcategories and their artifacts as table rows
+      Object.entries(toDisplay).forEach(([subcat, artifacts]) => {
+        artifacts.forEach(item => {
+          const row = document.createElement('tr');
+          const subcatCell = document.createElement('td');
+          subcatCell.textContent = subcat;
+
+          const pathCell = document.createElement('td');
+          // If path contains a URL, linkify it
+          pathCell.innerHTML = linkify(item.path);
+
+          const descCell = document.createElement('td');
+          // If description contains a URL, linkify it
+          descCell.innerHTML = linkify(item.description);
+
+          row.appendChild(subcatCell);
+          row.appendChild(pathCell);
+          row.appendChild(descCell);
+          tableBody.appendChild(row);
+        });
+      });
+    }
+
+    window.onload = updateSubcategories;
+  </script>
+</body>
+</html>         
+</body>
+</html> 
