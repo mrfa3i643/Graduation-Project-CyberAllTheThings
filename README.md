@@ -1,5 +1,10 @@
-# CyberAllTheThings: Red Team and Blue Team strategies 
+<div style="display: flex; align-items: center; margin-bottom: 20px;">
+  <img src="./logo.png" width="150" style="margin-right: 15px;"/>
+  <h1 style="margin: 0;">CyberAllTheThings: Red Team and Blue Team strategies</h1>
+</div>
 
+
+<br clear="left"/>
 ## Overview
 This project is a web-based platform designed to act as a centralized resource center for both Red Team (Offense) and Blue Team (Defense) cybersecurity professionals. The platform is divided into two major sections—Red Team and Blue Team—each offering guides, tools, and design resources tailored to their specific roles in cybersecurity operations.
 
