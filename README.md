@@ -28,7 +28,7 @@ The main goal of this project is to solve the issue of fragmented and scattered 
 - Students and instructors can use it as part of a course module or for independent learning.
 - Organizations can integrate the resources to support their internal cybersecurity strategies.
 
-## Installation & Requirements
+## Installation 
 
 To run the platform locally, follow these steps:
 
