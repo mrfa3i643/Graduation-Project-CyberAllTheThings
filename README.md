@@ -2,7 +2,6 @@
   <img src="logo.png" alt="Logo" />
 </p>
 
-
 ## CyberAllTheThings: Red Team and Blue Team strategies</h1>
 
 Overview
