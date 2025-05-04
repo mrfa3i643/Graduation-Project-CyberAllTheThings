@@ -39,8 +39,10 @@ git clone https://github.com/mrfa3i643/Graduation-project.git
 # Navigate into the project directory
 cd Graduation-project
 
-# Install Flask (you can use a virtual environment if preferred)
-pip install flask
+# Run the installer script to install dependencies and set up the launcher
+./installer.sh
 
-# Run the application
-python app.py
+# Start the Flask server using the custom launcher command
+justcatt
+
+```
