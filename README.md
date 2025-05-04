@@ -1,6 +1,8 @@
-<div style="display: flex; align-items: center; margin-bottom: 20px;">
-  <img src="./logo.png" width="150" style="margin-right: 15px;"/>
-  <h1 style="margin: 0;">CyberAllTheThings: Red Team and Blue Team strategies</h1>
+<div style="display: flex; justify-content: center;">
+  <div style="display: flex; align-items: center; width: 2008px; height: 472px; margin-bottom: 20px;">
+    <img src="./logo.png" width="150" style="margin-right: 15px;" />
+    <h1 style="margin: 0;">CyberAllTheThings: Red Team and Blue Team strategies</h1>
+  </div>
 </div>
 
 
