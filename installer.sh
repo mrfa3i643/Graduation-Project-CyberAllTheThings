@@ -15,7 +15,7 @@ chmod +x ./app.py
 
 # Install Python dependencies
 echo "${GREEN}[+] Installing Python packages (Flask, Flask-CORS)...${RESET}"
-sudo pip3 install flask flask-cors
+sudo pip3 install flask flask-cors --break-system-packages
 
 # Create launcher script
 echo "${GREEN}[+] Creating launcher script...${RESET}"
