@@ -35,6 +35,9 @@ echo "${GREEN}[+] Setting up project directory at ~/justcatt...${RESET}"
 mkdir -p ~/justcatt
 cp -r ./static ./templates ./CyberAllTheThings.py ./app.py ./README.md ~/justcatt
 
+sudo apt install docker.io
+sudo docker pull opensecurity/mobile-security-framework-mobsf:latest
+
 # Done
 echo "${GREEN}[✓] justcatt has been installed successfully!${RESET}"
 echo "${BOLD}${YELLOW}To run the program, type 'justcatt' in the terminal.${RESET}"
