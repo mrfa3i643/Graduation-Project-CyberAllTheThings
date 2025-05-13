@@ -1,18 +1,30 @@
 from flask import Flask, render_template, request
 import subprocess
 import os
-import sys
+import atexit
+
+# Start the MobSF Docker container in detached mode
+subprocess.run("sudo docker run -d -p 8000:8000 --name mobsf opensecurity/mobile-security-framework-mobsf:latest", shell=True)
+
+# Cleanup function to stop the container on app exit
+def cleanup():
+    print("Stopping MobSF container...")
+    subprocess.run("sudo docker stop mobsf", shell=True)
+    subprocess.run("sudo docker rm mobsf", shell=True)
+
+# Register cleanup
+atexit.register(cleanup)
 
 app = Flask(__name__)
 
 #======================================================
-#Certificates:
+# Certificates:
 @app.route('/certificates')
 def certificates():
     return render_template('certificates.html')
 
 #======================================================
-#Blue Section:
+# Blue Section:
 @app.route('/Blue/')
 def blue():
     return render_template('Blue/Blue.html')
@@ -42,8 +54,7 @@ def windows_forensics():
     return render_template('Blue/windows_forensics.html')
 
 #======================================================
-#Red Section:
-
+# Red Section:
 @app.route('/Red/')
 def Red():
     return render_template('Red/Red.html')
@@ -67,8 +78,9 @@ def PentestToolz():
 @app.route('/Red/WebAppPentest')
 def WebPentest():
     return render_template('Red/webpentest.html')
+
 #======================================================
-#Web pentest section:
+# Web pentest section:
 @app.route('/Red/WebAppPentest/sqli')
 def sql():
     return render_template('Red/webpentest/sqli.html')
@@ -110,12 +122,10 @@ def requestsmuggle():
     return render_template('Red/webpentest/requestsmuggling.html')
 
 #======================================================
-#main section:
-
+# Main section:
 @app.route('/')
 def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
     app.run(debug=True)
