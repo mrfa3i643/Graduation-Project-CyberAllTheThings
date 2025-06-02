@@ -29,7 +29,8 @@ chmod +x justcatt
 # Copy to /usr/bin
 echo "${RED}[!] sudo is required to copy the launcher to /usr/bin${RESET}"
 sudo cp justcatt /usr/bin/justcatt
-
+sudo apt install docker.io
+sudo docker pull opensecurity/mobile-security-framework-mobsf:latest
 # Setup project directory
 echo "${GREEN}[+] Setting up project directory at ~/justcatt...${RESET}"
 mkdir -p ~/justcatt
