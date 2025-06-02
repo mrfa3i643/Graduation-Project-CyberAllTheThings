@@ -50,6 +50,8 @@ justcatt
 
 ### Windows
 
+[Docker for windows (x64)](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe?utm_source=docker&utm_medium=webreferral&utm_campaign=docs-driven-download-win-amd64&_gl=1*heoiir*_ga*MjAyNDM5OTk4Mi4xNzQ4ODc0MDE4*_ga_XJWPQMJYHQ*czE3NDg4NzQwMTckbzEkZzEkdDE3NDg4NzQwMjIkajU1JGwwJGgw)
+
 ```powershell
 # Clone the repository
 git clone https://github.com/mrfa3i643/Graduation-project.git
