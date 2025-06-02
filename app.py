@@ -4,7 +4,7 @@ import os
 import atexit
 
 # Start the MobSF Docker container in detached mode
-# subprocess.run("sudo docker run -d -p 8000:8000 --name mobsf opensecurity/mobile-security-framework-mobsf:latest", shell=True)
+subprocess.run("sudo docker run -d -p 8000:8000 --name mobsf opensecurity/mobile-security-framework-mobsf:latest", shell=True)
 
 # Cleanup function to stop the container on app exit
 def cleanup():
