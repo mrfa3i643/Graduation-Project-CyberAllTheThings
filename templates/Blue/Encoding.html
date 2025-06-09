@@ -60,7 +60,7 @@
             border-radius: 12px;
             box-shadow: 0 0 20px var(--color-neon-blue);
             width: 100%;
-            max-width: 600px;
+            max-width: 700px;
             border: 2px solid var(--color-neon-blue);
             text-align: center;
             position: relative;
@@ -99,6 +99,7 @@
             gap: 10px;
             justify-content: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         select, button {
@@ -114,6 +115,12 @@
             background: var(--color-medium);
             color: var(--color-neon-blue);
             border: 2px solid var(--color-neon-blue);
+            min-width: 150px;
+        }
+
+        select option {
+            background: var(--color-medium);
+            color: var(--color-neon-blue);
         }
 
         button {
@@ -142,6 +149,7 @@
             margin-bottom: 15px;
             cursor: pointer;
             transition: background 0.3s, color 0.3s;
+            min-height: 50px;
         }
 
         .result:hover {
@@ -171,7 +179,6 @@
             to { transform: translateY(2px); }
         }
 
-        /* Back Button Styles */
         .back-button {
             position: relative;
             display: inline-block;
@@ -193,6 +200,13 @@
             color: var(--color-dark);
             box-shadow: 0 0 20px var(--color-neon-blue);
         }
+
+        .info-text {
+            font-size: 12px;
+            color: var(--color-text-light);
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -207,22 +221,60 @@
 
         <div class="controls">
             <select id="modeSelect">
-                <option value="base64">Base64</option>
-                <option value="uri">URI</option>
-                <option value="hex">Hex</option>
+                <optgroup label="Auto Detection">
+                    <option value="auto">🔍 Auto Detect</option>
+                </optgroup>
+                <optgroup label="Standard Encoding">
+                    <option value="base64">Base64</option>
+                    <option value="uri">URI/URL</option>
+                    <option value="hex">Hexadecimal</option>
+                    <option value="binary">Binary</option>
+                    <option value="octal">Octal</option>
+                </optgroup>
+                <optgroup label="Text Encoding">
+                    <option value="ascii">ASCII</option>
+                    <option value="unicode">Unicode</option>
+                    <option value="morse">Morse Code</option>
+                    <option value="nato">NATO Phonetic</option>
+                </optgroup>
+                <optgroup label="Cryptographic">
+                    <option value="rot13">ROT13</option>
+                    <option value="rot47">ROT47</option>
+                    <option value="atbash">Atbash Cipher</option>
+                    <option value="caesar">Caesar Cipher</option>
+                </optgroup>
+                <optgroup label="Data Formats">
+                    <option value="json">JSON Stringify</option>
+                    <option value="html">HTML Entities</option>
+                    <option value="markdown">Markdown Escape</option>
+                    <option value="regex">Regex Escape</option>
+                </optgroup>
+                <optgroup label="Special">
+                    <option value="reverse">Reverse Text</option>
+                    <option value="updown">Upside Down</option>
+                    <option value="leetspeak">Leet Speak</option>
+                    <option value="zalgo">Zalgo Text</option>
+                </optgroup>
             </select>
             <button onclick="performEncode()">Encode</button>
             <button onclick="performDecode()">Decode</button>
+            <button onclick="autoDetectAndDecode()">🔍 Auto Decode</button>
+            <button onclick="clearAll()">Clear</button>
+        </div>
+
+        <div class="info-text">
+            Click on result to copy to clipboard
         </div>
 
         <div id="resultDisplay" class="result" onclick="copyToClipboard(this)">
-            Results will appear here
+            Results will appear here...
         </div>
     </div>
 
     <div class="scanlines"></div>
 
     <script>
+        // Utility functions
         function toHex(str) {
             return Array.from(str).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
         }
@@ -231,23 +283,457 @@
             return hex.match(/.{1,2}/g)?.map(byte => String.fromCharCode(parseInt(byte, 16))).join('') || '';
         }
 
+        function toBinary(str) {
+            return str.split('').map(char => char.charCodeAt(0).toString(2).padStart(8, '0')).join(' ');
+        }
+
+        function binaryToString(binary) {
+            return binary.split(' ').map(bin => String.fromCharCode(parseInt(bin, 2))).join('');
+        }
+
+        function toOctal(str) {
+            return str.split('').map(char => '\\' + char.charCodeAt(0).toString(8)).join('');
+        }
+
+        function octalToString(octal) {
+            return octal.replace(/\\(\d{1,3})/g, (match, oct) => String.fromCharCode(parseInt(oct, 8)));
+        }
+
+        function toAscii(str) {
+            return str.split('').map(char => char.charCodeAt(0)).join(' ');
+        }
+
+        function asciiToString(ascii) {
+            return ascii.split(' ').map(code => String.fromCharCode(parseInt(code))).join('');
+        }
+
+        function toUnicode(str) {
+            return str.split('').map(char => '\\u' + char.charCodeAt(0).toString(16).padStart(4, '0')).join('');
+        }
+
+        function unicodeToString(unicode) {
+            return unicode.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+        }
+
+        // Morse code mapping
+        const morseCode = {
+            'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+            'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+            'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+            'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+            'Y': '-.--', 'Z': '--..', '0': '-----', '1': '.----', '2': '..---',
+            '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...',
+            '8': '---..', '9': '----.', ' ': '/'
+        };
+
+        const reverseMorse = Object.fromEntries(Object.entries(morseCode).map(([k, v]) => [v, k]));
+
+        function toMorse(str) {
+            return str.toUpperCase().split('').map(char => morseCode[char] || char).join(' ');
+        }
+
+        function morseToString(morse) {
+            return morse.split(' ').map(code => reverseMorse[code] || code).join('');
+        }
+
+        // NATO phonetic alphabet
+        const natoPhonetic = {
+            'A': 'Alpha', 'B': 'Bravo', 'C': 'Charlie', 'D': 'Delta', 'E': 'Echo',
+            'F': 'Foxtrot', 'G': 'Golf', 'H': 'Hotel', 'I': 'India', 'J': 'Juliet',
+            'K': 'Kilo', 'L': 'Lima', 'M': 'Mike', 'N': 'November', 'O': 'Oscar',
+            'P': 'Papa', 'Q': 'Quebec', 'R': 'Romeo', 'S': 'Sierra', 'T': 'Tango',
+            'U': 'Uniform', 'V': 'Victor', 'W': 'Whiskey', 'X': 'X-ray', 'Y': 'Yankee',
+            'Z': 'Zulu', '0': 'Zero', '1': 'One', '2': 'Two', '3': 'Three', '4': 'Four',
+            '5': 'Five', '6': 'Six', '7': 'Seven', '8': 'Eight', '9': 'Nine'
+        };
+
+        const reverseNato = Object.fromEntries(Object.entries(natoPhonetic).map(([k, v]) => [v.toLowerCase(), k]));
+
+        function toNato(str) {
+            return str.toUpperCase().split('').map(char => natoPhonetic[char] || char).join(' ');
+        }
+
+        function natoToString(nato) {
+            return nato.toLowerCase().split(' ').map(word => reverseNato[word] || word).join('');
+        }
+
+        // ROT ciphers
+        function rot13(str) {
+            return str.replace(/[A-Za-z]/g, char => {
+                const start = char <= 'Z' ? 65 : 97;
+                return String.fromCharCode((char.charCodeAt(0) - start + 13) % 26 + start);
+            });
+        }
+
+        function rot47(str) {
+            return str.replace(/[!-~]/g, char => 
+                String.fromCharCode(33 + (char.charCodeAt(0) - 33 + 47) % 94)
+            );
+        }
+
+        function caesarCipher(str, shift = 3) {
+            return str.replace(/[A-Za-z]/g, char => {
+                const start = char <= 'Z' ? 65 : 97;
+                return String.fromCharCode((char.charCodeAt(0) - start + shift) % 26 + start);
+            });
+        }
+
+        function atbashCipher(str) {
+            return str.replace(/[A-Za-z]/g, char => {
+                if (char <= 'Z') {
+                    return String.fromCharCode(90 - (char.charCodeAt(0) - 65));
+                } else {
+                    return String.fromCharCode(122 - (char.charCodeAt(0) - 97));
+                }
+            });
+        }
+
+        // HTML entities
+        function toHtmlEntities(str) {
+            return str.replace(/[&<>"']/g, char => {
+                const entities = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'};
+                return entities[char] || char;
+            });
+        }
+
+        function fromHtmlEntities(str) {
+            return str.replace(/&(amp|lt|gt|quot|#39);/g, (match, entity) => {
+                const entities = {'amp': '&', 'lt': '<', 'gt': '>', 'quot': '"', '#39': "'"};
+                return entities[entity] || match;
+            });
+        }
+
+        // Upside down text
+        const upsideDownMap = {
+            'a': 'ɐ', 'b': 'q', 'c': 'ɔ', 'd': 'p', 'e': 'ǝ', 'f': 'ɟ', 'g': 'ǝ', 'h': 'ɥ',
+            'i': 'ᴉ', 'j': 'ɾ', 'k': 'ʞ', 'l': 'l', 'm': 'ɯ', 'n': 'u', 'o': 'o', 'p': 'd',
+            'q': 'b', 'r': 'ɹ', 's': 's', 't': 'ʇ', 'u': 'n', 'v': 'ʌ', 'w': 'ʍ', 'x': 'x',
+            'y': 'ʎ', 'z': 'z', '1': 'Ɩ', '2': 'ᄅ', '3': 'Ɛ', '4': 'ㄣ', '5': 'ϛ', '6': '9',
+            '7': 'ㄥ', '8': '8', '9': '6', '0': '0', '.': '˙', ',': "'", '?': '¿', '!': '¡'
+        };
+
+        const reverseUpsideDown = Object.fromEntries(Object.entries(upsideDownMap).map(([k, v]) => [v, k]));
+
+        function toUpsideDown(str) {
+            return str.toLowerCase().split('').reverse().map(char => upsideDownMap[char] || char).join('');
+        }
+
+        function fromUpsideDown(str) {
+            return str.split('').reverse().map(char => reverseUpsideDown[char] || char).join('');
+        }
+
+        // Leet speak
+        const leetMap = {
+            'a': '4', 'e': '3', 'i': '1', 'o': '0', 's': '5', 't': '7', 'l': '1', 'g': '9'
+        };
+
+        function toLeetSpeak(str) {
+            return str.toLowerCase().split('').map(char => leetMap[char] || char).join('');
+        }
+
+        // Zalgo text
+        function toZalgo(str) {
+            const zalgoChars = ['̀', '́', '̂', '̃', '̄', '̅', '̆', '̇', '̈', '̉', '̊', '̋', '̌', '̍', '̎', '̏'];
+            return str.split('').map(char => {
+                if (char.match(/[a-zA-Z]/)) {
+                    const numMarks = Math.floor(Math.random() * 3) + 1;
+                    let result = char;
+                    for (let i = 0; i < numMarks; i++) {
+                        result += zalgoChars[Math.floor(Math.random() * zalgoChars.length)];
+                    }
+                    return result;
+                }
+                return char;
+            }).join('');
+        }
+
+        // Auto detection functions
+        function detectBase64(str) {
+            const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+            return base64Regex.test(str) && str.length % 4 === 0 && str.length > 3;
+        }
+
+        function detectHex(str) {
+            const hexRegex = /^[0-9a-fA-F\s]+$/;
+            return hexRegex.test(str.replace(/\s/g, '')) && str.replace(/\s/g, '').length % 2 === 0;
+        }
+
+        function detectBinary(str) {
+            const binaryRegex = /^[01\s]+$/;
+            const cleanStr = str.replace(/\s/g, '');
+            return binaryRegex.test(str) && cleanStr.length % 8 === 0 && cleanStr.length > 7;
+        }
+
+        function detectMorse(str) {
+            const morseRegex = /^[.\-\s\/]+$/;
+            return morseRegex.test(str) && (str.includes('.') || str.includes('-'));
+        }
+
+        function detectURI(str) {
+            return str.includes('%') && /(%[0-9A-Fa-f]{2})+/.test(str);
+        }
+
+        function detectUnicode(str) {
+            return /\\u[0-9a-fA-F]{4}/.test(str);
+        }
+
+        function detectHTML(str) {
+            return /&[a-zA-Z0-9#]+;/.test(str);
+        }
+
+        function detectASCII(str) {
+            const asciiRegex = /^[\d\s]+$/;
+            if (!asciiRegex.test(str)) return false;
+            const codes = str.trim().split(/\s+/).map(Number);
+            return codes.every(code => code >= 32 && code <= 126) && codes.length > 1;
+        }
+
+        function detectJSON(str) {
+            try {
+                JSON.parse(str);
+                return str.startsWith('"') && str.endsWith('"');
+            } catch {
+                return false;
+            }
+        }
+
+        function detectROT13(str) {
+            // Check if text contains readable English words when ROT13 decoded
+            const decoded = rot13(str);
+            const commonWords = ['the', 'and', 'you', 'that', 'was', 'for', 'are', 'with', 'his', 'they'];
+            const lowerDecoded = decoded.toLowerCase();
+            return commonWords.some(word => lowerDecoded.includes(word)) && /[a-zA-Z]/.test(str);
+        }
+
+        function detectCaesar(str) {
+            // Try different Caesar shifts and check for common English patterns
+            for (let shift = 1; shift <= 25; shift++) {
+                const decoded = caesarCipher(str, -shift);
+                const lowerDecoded = decoded.toLowerCase();
+                const commonWords = ['the', 'and', 'you', 'that', 'was'];
+                if (commonWords.some(word => lowerDecoded.includes(word))) {
+                    return { detected: true, shift: shift };
+                }
+            }
+            return { detected: false };
+        }
+
+        function detectAtbash(str) {
+            const decoded = atbashCipher(str);
+            const commonWords = ['the', 'and', 'you', 'that', 'was'];
+            const lowerDecoded = decoded.toLowerCase();
+            return commonWords.some(word => lowerDecoded.includes(word)) && /[a-zA-Z]/.test(str);
+        }
+
+        function detectUpsideDown(str) {
+            return /[ɐqɔpǝɟɥᴉɾʞɯuodɹʇʌʍʎɹz]/.test(str);
+        }
+
+        function detectZalgo(str) {
+            return /[\u0300-\u036f]/.test(str);
+        }
+
+        function detectNATO(str) {
+            const natoWords = ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf', 'hotel'];
+            const lowerStr = str.toLowerCase();
+            return natoWords.some(word => lowerStr.includes(word));
+        }
+
+        function detectOctal(str) {
+            const octalRegex = /^\\[0-7]+/;
+            return octalRegex.test(str) || /^[0-7\s]+$/.test(str);
+        }
+
+        // Main auto-detection function
+        function autoDetectCipher(input) {
+            const detectionResults = [];
+            
+            // Test each detection method
+            if (detectBase64(input)) {
+                try {
+                    const decoded = decodeData(input, 'base64');
+                    if (!decoded.includes('error')) {
+                        detectionResults.push({ type: 'base64', confidence: 95, preview: decoded.substring(0, 50) });
+                    }
+                } catch {}
+            }
+
+            if (detectHex(input)) {
+                try {
+                    const decoded = decodeData(input, 'hex');
+                    if (!decoded.includes('error') && /^[\x20-\x7E]*$/.test(decoded)) {
+                        detectionResults.push({ type: 'hex', confidence: 90, preview: decoded.substring(0, 50) });
+                    }
+                } catch {}
+            }
+
+            if (detectBinary(input)) {
+                try {
+                    const decoded = decodeData(input, 'binary');
+                    if (!decoded.includes('error')) {
+                        detectionResults.push({ type: 'binary', confidence: 95, preview: decoded.substring(0, 50) });
+                    }
+                } catch {}
+            }
+
+            if (detectMorse(input)) {
+                try {
+                    const decoded = decodeData(input, 'morse');
+                    if (!decoded.includes('error')) {
+                        detectionResults.push({ type: 'morse', confidence: 85, preview: decoded.substring(0, 50) });
+                    }
+                } catch {}
+            }
+
+            if (detectURI(input)) {
+                try {
+                    const decoded = decodeData(input, 'uri');
+                    if (!decoded.includes('error')) {
+                        detectionResults.push({ type: 'uri', confidence: 90, preview: decoded.substring(0, 50) });
+                    }
+                } catch {}
+            }
+
+            if (detectUnicode(input)) {
+                try {
+                    const decoded = decodeData(input, 'unicode');
+                    if (!decoded.includes('error')) {
+                        detectionResults.push({ type: 'unicode', confidence: 95, preview: decoded.substring(0, 50) });
+                    }
+                } catch {}
+            }
+
+            if (detectHTML(input)) {
+                try {
+                    const decoded = decodeData(input, 'html');
+                    if (!decoded.includes('error')) {
+                        detectionResults.push({ type: 'html', confidence: 85, preview: decoded.substring(0, 50) });
+                    }
+                } catch {}
+            }
+
+            if (detectASCII(input)) {
+                try {
+                    const decoded = decodeData(input, 'ascii');
+                    if (!decoded.includes('error')) {
+                        detectionResults.push({ type: 'ascii', confidence: 80, preview: decoded.substring(0, 50) });
+                    }
+                } catch {}
+            }
+
+            if (detectJSON(input)) {
+                try {
+                    const decoded = decodeData(input, 'json');
+                    if (!decoded.includes('error')) {
+                        detectionResults.push({ type: 'json', confidence: 95, preview: decoded.substring(0, 50) });
+                    }
+                } catch {}
+            }
+
+            if (detectROT13(input)) {
+                detectionResults.push({ type: 'rot13', confidence: 75, preview: rot13(input).substring(0, 50) });
+            }
+
+            const caesarResult = detectCaesar(input);
+            if (caesarResult.detected) {
+                const decoded = caesarCipher(input, -caesarResult.shift);
+                detectionResults.push({ type: 'caesar', confidence: 70, preview: decoded.substring(0, 50), shift: caesarResult.shift });
+            }
+
+            if (detectAtbash(input)) {
+                detectionResults.push({ type: 'atbash', confidence: 65, preview: atbashCipher(input).substring(0, 50) });
+            }
+
+            if (detectUpsideDown(input)) {
+                detectionResults.push({ type: 'updown', confidence: 90, preview: fromUpsideDown(input).substring(0, 50) });
+            }
+
+            if (detectZalgo(input)) {
+                detectionResults.push({ type: 'zalgo', confidence: 95, preview: input.replace(/[\u0300-\u036f]/g, '').substring(0, 50) });
+            }
+
+            if (detectNATO(input)) {
+                try {
+                    const decoded = decodeData(input, 'nato');
+                    if (!decoded.includes('error')) {
+                        detectionResults.push({ type: 'nato', confidence: 85, preview: decoded.substring(0, 50) });
+                    }
+                } catch {}
+            }
+
+            if (detectOctal(input)) {
+                try {
+                    const decoded = decodeData(input, 'octal');
+                    if (!decoded.includes('error')) {
+                        detectionResults.push({ type: 'octal', confidence: 75, preview: decoded.substring(0, 50) });
+                    }
+                } catch {}
+            }
+
+            // Sort by confidence
+            detectionResults.sort((a, b) => b.confidence - a.confidence);
+            return detectionResults;
+        }
+
+        // Main encoding function
         function encodeData(input, mode) {
             try {
-                if (mode === "base64") return btoa(unescape(encodeURIComponent(input)));
-                if (mode === "uri") return encodeURIComponent(input);
-                if (mode === "hex") return toHex(input);
-                throw new Error("Invalid encoding mode");
+                switch (mode) {
+                    case "base64": return btoa(unescape(encodeURIComponent(input)));
+                    case "uri": return encodeURIComponent(input);
+                    case "hex": return toHex(input);
+                    case "binary": return toBinary(input);
+                    case "octal": return toOctal(input);
+                    case "ascii": return toAscii(input);
+                    case "unicode": return toUnicode(input);
+                    case "morse": return toMorse(input);
+                    case "nato": return toNato(input);
+                    case "rot13": return rot13(input);
+                    case "rot47": return rot47(input);
+                    case "atbash": return atbashCipher(input);
+                    case "caesar": return caesarCipher(input);
+                    case "json": return JSON.stringify(input);
+                    case "html": return toHtmlEntities(input);
+                    case "markdown": return input.replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&');
+                    case "regex": return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    case "reverse": return input.split('').reverse().join('');
+                    case "updown": return toUpsideDown(input);
+                    case "leetspeak": return toLeetSpeak(input);
+                    case "zalgo": return toZalgo(input);
+                    default: throw new Error("Invalid encoding mode");
+                }
             } catch (error) {
                 return "Encoding error: " + error.message;
             }
         }
 
+        // Main decoding function
         function decodeData(input, mode) {
             try {
-                if (mode === "base64") return decodeURIComponent(escape(atob(input)));
-                if (mode === "uri") return decodeURIComponent(input);
-                if (mode === "hex") return hex2a(input);
-                throw new Error("Invalid decoding mode");
+                switch (mode) {
+                    case "base64": return decodeURIComponent(escape(atob(input)));
+                    case "uri": return decodeURIComponent(input);
+                    case "hex": return hex2a(input);
+                    case "binary": return binaryToString(input);
+                    case "octal": return octalToString(input);
+                    case "ascii": return asciiToString(input);
+                    case "unicode": return unicodeToString(input);
+                    case "morse": return morseToString(input);
+                    case "nato": return natoToString(input);
+                    case "rot13": return rot13(input); // ROT13 is its own inverse
+                    case "rot47": return rot47(input); // ROT47 is its own inverse
+                    case "atbash": return atbashCipher(input); // Atbash is its own inverse
+                    case "caesar": return caesarCipher(input, -3); // Reverse Caesar with -3 shift
+                    case "json": return JSON.parse(input);
+                    case "html": return fromHtmlEntities(input);
+                    case "markdown": return input.replace(/\\([\\`*_{}[\]()#+\-.!])/g, '$1');
+                    case "regex": return input.replace(/\\([.*+?^${}()|[\]\\])/g, '$1');
+                    case "reverse": return input.split('').reverse().join('');
+                    case "updown": return fromUpsideDown(input);
+                    case "leetspeak": return input; // Leet speak decoding is not straightforward
+                    case "zalgo": return input.replace(/[\u0300-\u036f]/g, ''); // Remove combining marks
+                    default: throw new Error("Invalid decoding mode");
+                }
             } catch (error) {
                 return "Decoding error: " + error.message;
             }
@@ -256,13 +742,66 @@
         function performEncode() {
             const input = document.getElementById('inputText').value;
             const mode = document.getElementById('modeSelect').value;
+            if (!input) {
+                displayResult("Please enter text to encode");
+                return;
+            }
+            if (mode === 'auto') {
+                displayResult("Auto mode is for decoding only. Please select a specific encoding method.");
+                return;
+            }
             displayResult(encodeData(input, mode));
         }
 
         function performDecode() {
             const input = document.getElementById('inputText').value;
             const mode = document.getElementById('modeSelect').value;
+            if (!input) {
+                displayResult("Please enter text to decode");
+                return;
+            }
+            if (mode === 'auto') {
+                autoDetectAndDecode();
+                return;
+            }
             displayResult(decodeData(input, mode));
+        }
+
+        function autoDetectAndDecode() {
+            const input = document.getElementById('inputText').value;
+            if (!input) {
+                displayResult("Please enter cipher text to auto-decode");
+                return;
+            }
+
+            const detectionResults = autoDetectCipher(input);
+            
+            if (detectionResults.length === 0) {
+                displayResult("🔍 AUTO DETECTION FAILED\n\nNo known encoding patterns detected. The text might be:\n• Plain text\n• Unknown cipher\n• Custom encoding\n• Corrupted data");
+                return;
+            }
+
+            // Format results
+            let result = "🔍 CIPHER DETECTION RESULTS\n";
+            result += "=" .repeat(40) + "\n\n";
+
+            detectionResults.forEach((detection, index) => {
+                const confidence = "█".repeat(Math.floor(detection.confidence / 10)) + "░".repeat(10 - Math.floor(detection.confidence / 10));
+                result += `${index + 1}. ${detection.type.toUpperCase()}\n`;
+                result += `   Confidence: ${detection.confidence}% [${confidence}]\n`;
+                if (detection.shift) {
+                    result += `   Shift: ${detection.shift}\n`;
+                }
+                result += `   Preview: "${detection.preview}${detection.preview.length >= 50 ? '...' : ''}"\n\n`;
+            });
+
+            result += "=" .repeat(40) + "\n";
+            result += `Most likely: ${detectionResults[0].type.toUpperCase()} (${detectionResults[0].confidence}% confidence)`;
+
+            displayResult(result);
+
+            // Auto-set the dropdown to the most likely detection
+            document.getElementById('modeSelect').value = detectionResults[0].type;
         }
 
         function displayResult(result) {
@@ -271,10 +810,47 @@
         }
 
         function copyToClipboard(element) {
-            navigator.clipboard.writeText(element.innerText);
-            element.innerText = "Copied!";
-            setTimeout(() => { element.innerText = "Click to copy result"; }, 1000);
+            const text = element.innerText;
+            if (text === "Results will appear here..." || text === "Copied!" || text.includes("error")) {
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = element.innerText;
+                element.innerText = "Copied!";
+                setTimeout(() => { 
+                    element.innerText = originalText; 
+                }, 1000);
+            });
         }
+
+        function clearAll() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('resultDisplay').innerText = 'Results will appear here...';
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'Enter':
+                        e.preventDefault();
+                        performEncode();
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        performDecode();
+                        break;
+                    case 'a':
+                        e.preventDefault();
+                        autoDetectAndDecode();
+                        break;
+                    case 'l':
+                        e.preventDefault();
+                        clearAll();
+                        break;
+                }
+            }
+        });
     </script>
 
 </body>
