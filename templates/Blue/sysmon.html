@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sysmon Rule Generator</title>
+    <title>Enhanced Sysmon Rule Generator</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap');
 
@@ -65,10 +65,30 @@
             box-shadow: 0 0 20px var(--color-neon-blue);
             text-align: center;
             width: 100%;
-            max-width: 700px;
+            max-width: 800px;
+            max-height: 90vh;
             border: 2px solid var(--color-neon-blue);
             position: relative;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-neon-blue) var(--color-medium);
+        }
+
+        /* Custom scrollbar for WebKit browsers */
+        .container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: var(--color-medium);
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background-color: var(--color-neon-blue);
+            border-radius: 10px;
+            border: 2px solid var(--color-medium);
         }
 
         h1 {
@@ -102,7 +122,7 @@
             margin-bottom: 5px;
         }
 
-        input {
+        input, select, textarea {
             width: 100%;
             padding: 10px;
             border: 2px solid var(--color-neon-blue);
@@ -115,9 +135,24 @@
             transition: all 0.3s ease-in-out;
         }
 
-        input:focus {
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+            text-align: left;
+        }
+
+        input:focus, select:focus, textarea:focus {
             box-shadow: 0 0 10px var(--color-neon-blue);
             border-color: var(--color-neon-blue);
+        }
+
+        select {
+            text-align-last: center;
+        }
+
+        select option {
+            background: var(--color-medium);
+            color: var(--color-text-light);
         }
 
         button {
@@ -134,6 +169,7 @@
             border: 2px solid var(--color-neon-blue);
             cursor: pointer;
             width: 100%;
+            margin-top: 10px;
         }
 
         button:hover {
@@ -158,7 +194,10 @@
             padding: 10px;
             border-radius: 5px;
             color: var(--color-neon-blue);
-            font-size: 14px;
+            font-size: 12px;
+            text-align: left;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
         /* Animated Scan Lines */
@@ -211,85 +250,484 @@
             color: var(--color-dark);
             box-shadow: 0 0 20px var(--color-neon-blue);
         }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.2);
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            text-transform: none;
+            font-size: 12px;
+        }
+
+        .help-text {
+            font-size: 11px;
+            color: #888;
+            margin-top: 3px;
+            font-style: italic;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .template-selector {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid var(--color-neon-blue);
+            border-radius: 5px;
+            background: rgba(0, 217, 255, 0.1);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <a href="javascript:history.back()" class="back-button">← BACK</a>
-        <h1>Sysmon Rule Generator</h1>
+        <h1>Enhanced Sysmon Rule Generator</h1>
+        
+        <div class="template-selector">
+            <label for="template">Quick Templates:</label>
+            <select id="template" onchange="loadTemplate()">
+                <option value="">Select a template...</option>
+                <option value="suspicious_powershell">Suspicious PowerShell</option>
+                <option value="process_injection">Process Injection</option>
+                <option value="network_connections">Network Connections</option>
+                <option value="file_creation">File Creation</option>
+                <option value="registry_modification">Registry Modification</option>
+                <option value="custom">Custom Rule</option>
+            </select>
+        </div>
         
         <form id="sysmonForm">
             <div class="form-group">
                 <label for="ruleName">Rule Name:</label>
                 <input type="text" id="ruleName" placeholder="Enter descriptive rule name" required>
+                <div class="help-text">Use descriptive names like "Suspicious_CMD_Execution"</div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="eventType">Event Type:</label>
+                    <select id="eventType" onchange="updateFieldsForEventType()">
+                        <option value="ProcessCreate">Process Create (ID: 1)</option>
+                        <option value="NetworkConnect">Network Connect (ID: 3)</option>
+                        <option value="FileCreate">File Create (ID: 11)</option>
+                        <option value="RegistryEvent">Registry Event (ID: 12-14)</option>
+                        <option value="ProcessAccess">Process Access (ID: 10)</option>
+                        <option value="ImageLoaded">Image/DLL Load (ID: 7)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="matchType">Match Type:</label>
+                    <select id="matchType">
+                        <option value="include">Include (Log events)</option>
+                        <option value="exclude">Exclude (Filter out)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="dynamicFields">
+                <!-- Dynamic fields based on event type -->
+                <div class="form-group">
+                    <label for="processName">Process Name(s):</label>
+                    <input type="text" id="processName" placeholder="cmd.exe;powershell.exe;notepad.exe">
+                    <div class="help-text">Separate multiple values with semicolons</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="commandLine">Command Line:</label>
+                    <textarea id="commandLine" placeholder="whoami;net user;Get-Process"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="parentImage">Parent Image:</label>
+                    <input type="text" id="parentImage" placeholder="explorer.exe;winlogon.exe">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="condition">Condition Type:</label>
+                    <select id="condition">
+                        <option value="contains">Contains</option>
+                        <option value="is">Is (exact match)</option>
+                        <option value="begin">Begins with</option>
+                        <option value="end">Ends with</option>
+                        <option value="excludes">Excludes</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="caseSensitive">
+                        <label for="caseSensitive">Case Sensitive</label>
+                    </div>
+                </div>
             </div>
             
             <div class="form-group">
-                <label for="processName">Process Name(s):</label>
-                <input type="text" id="processName" placeholder="cmd.exe; powershell.exe">
+                <label for="description">Rule Description:</label>
+                <textarea id="description" placeholder="Describe what this rule detects and why it's important..."></textarea>
             </div>
             
-            <div class="form-group">
-                <label for="arguments">Argument(s):</label>
-                <input type="text" id="arguments" placeholder="whoami; net">
+            <div class="button-group">
+                <button type="button" onclick="generateSysmonRule()">Generate Rule</button>
+                <button type="button" onclick="clearForm()">Clear Form</button>
+                <button type="button" onclick="validateRule()">Validate Rule</button>
             </div>
-            
-            <button type="button" onclick="generateSysmonRule()">Generate Rule</button>
         </form>
         
         <div id="result" class="result-container">
-            <h3>Generated Rule</h3>
+            <h3>Generated Sysmon Rule</h3>
             <pre id="ruleOutput"></pre>
-            <button id="downloadBtn">Download Rule</button>
+            <div class="button-group">
+                <button id="downloadBtn">Download XML</button>
+                <button onclick="copyToClipboard()">Copy to Clipboard</button>
+                <button onclick="showRuleStats()">Rule Statistics</button>
+            </div>
         </div>
     </div>
 
     <div class="scanlines"></div>
 
     <script>
-        
+        const templates = {
+            suspicious_powershell: {
+                ruleName: "Suspicious_PowerShell_Execution",
+                eventType: "ProcessCreate",
+                processName: "powershell.exe;pwsh.exe",
+                commandLine: "-EncodedCommand;-WindowStyle Hidden;-ExecutionPolicy Bypass;IEX;Invoke-Expression",
+                parentImage: "",
+                description: "Detects suspicious PowerShell executions with encoded commands or bypass techniques"
+            },
+            process_injection: {
+                ruleName: "Process_Injection_Detection",
+                eventType: "ProcessAccess",
+                processName: "",
+                commandLine: "",
+                parentImage: "",
+                description: "Detects potential process injection techniques"
+            },
+            network_connections: {
+                ruleName: "Suspicious_Network_Connections",
+                eventType: "NetworkConnect",
+                processName: "cmd.exe;powershell.exe;regsvr32.exe;rundll32.exe",
+                commandLine: "",
+                parentImage: "",
+                description: "Detects network connections from suspicious processes"
+            },
+            file_creation: {
+                ruleName: "Suspicious_File_Creation",
+                eventType: "FileCreate",
+                processName: "",
+                commandLine: "",
+                parentImage: "",
+                description: "Detects creation of files in suspicious locations"
+            },
+            registry_modification: {
+                ruleName: "Registry_Persistence_Detection",
+                eventType: "RegistryEvent",
+                processName: "",
+                commandLine: "",
+                parentImage: "",
+                description: "Detects registry modifications commonly used for persistence"
+            }
+        };
+
+        function loadTemplate() {
+            const templateName = document.getElementById('template').value;
+            if (!templateName || templateName === 'custom') {
+                clearForm();
+                return;
+            }
+            
+            const template = templates[templateName];
+            if (template) {
+                document.getElementById('ruleName').value = template.ruleName;
+                document.getElementById('eventType').value = template.eventType;
+                document.getElementById('processName').value = template.processName;
+                document.getElementById('commandLine').value = template.commandLine;
+                document.getElementById('parentImage').value = template.parentImage;
+                document.getElementById('description').value = template.description;
+                updateFieldsForEventType();
+            }
+        }
+
+        function updateFieldsForEventType() {
+            const eventType = document.getElementById('eventType').value;
+            const dynamicFields = document.getElementById('dynamicFields');
+            
+            let fieldsHTML = '';
+            
+            switch(eventType) {
+                case 'ProcessCreate':
+                    fieldsHTML = `
+                        <div class="form-group">
+                            <label for="processName">Process Name(s):</label>
+                            <input type="text" id="processName" placeholder="cmd.exe;powershell.exe;notepad.exe">
+                            <div class="help-text">Separate multiple values with semicolons</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="commandLine">Command Line:</label>
+                            <textarea id="commandLine" placeholder="whoami;net user;Get-Process"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="parentImage">Parent Image:</label>
+                            <input type="text" id="parentImage" placeholder="explorer.exe;winlogon.exe">
+                        </div>
+                    `;
+                    break;
+                case 'NetworkConnect':
+                    fieldsHTML = `
+                        <div class="form-group">
+                            <label for="processName">Process Name(s):</label>
+                            <input type="text" id="processName" placeholder="cmd.exe;powershell.exe">
+                        </div>
+                        <div class="form-group">
+                            <label for="destinationIp">Destination IP:</label>
+                            <input type="text" id="destinationIp" placeholder="192.168.1.1;10.0.0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="destinationPort">Destination Port:</label>
+                            <input type="text" id="destinationPort" placeholder="443;80;22">
+                        </div>
+                    `;
+                    break;
+                case 'FileCreate':
+                    fieldsHTML = `
+                        <div class="form-group">
+                            <label for="targetFilename">Target Filename:</label>
+                            <input type="text" id="targetFilename" placeholder="*.exe;*.dll;*.bat">
+                        </div>
+                        <div class="form-group">
+                            <label for="processName">Process Name(s):</label>
+                            <input type="text" id="processName" placeholder="cmd.exe;powershell.exe">
+                        </div>
+                    `;
+                    break;
+                case 'RegistryEvent':
+                    fieldsHTML = `
+                        <div class="form-group">
+                            <label for="targetObject">Registry Key:</label>
+                            <input type="text" id="targetObject" placeholder="HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run">
+                        </div>
+                        <div class="form-group">
+                            <label for="processName">Process Name(s):</label>
+                            <input type="text" id="processName" placeholder="cmd.exe;powershell.exe">
+                        </div>
+                    `;
+                    break;
+                default:
+                    fieldsHTML = `
+                        <div class="form-group">
+                            <label for="processName">Process Name(s):</label>
+                            <input type="text" id="processName" placeholder="cmd.exe;powershell.exe">
+                        </div>
+                    `;
+            }
+            
+            dynamicFields.innerHTML = fieldsHTML;
+        }
+
         function generateSysmonRule() {
             const ruleName = document.getElementById('ruleName').value.trim().replace(/\s+/g, '_');
-            const processName = document.getElementById('processName').value.trim() || '*';
-            const arguments = document.getElementById('arguments').value.trim() || '*';
+            const eventType = document.getElementById('eventType').value;
+            const matchType = document.getElementById('matchType').value;
+            const condition = document.getElementById('condition').value;
+            const description = document.getElementById('description').value.trim();
 
             if (!ruleName) {
                 alert('Please enter a rule name');
                 return;
             }
 
-            const sysmonRule = `<Sysmon>
+            let ruleContent = '';
+            let rules = [];
+
+            // Get field values based on event type
+            const processName = document.getElementById('processName')?.value.trim();
+            const commandLine = document.getElementById('commandLine')?.value.trim();
+            const parentImage = document.getElementById('parentImage')?.value.trim();
+            const destinationIp = document.getElementById('destinationIp')?.value.trim();
+            const destinationPort = document.getElementById('destinationPort')?.value.trim();
+            const targetFilename = document.getElementById('targetFilename')?.value.trim();
+            const targetObject = document.getElementById('targetObject')?.value.trim();
+
+            // Build rule conditions
+            if (processName) {
+                const processes = processName.split(';').map(p => p.trim()).filter(p => p);
+                processes.forEach(proc => {
+                    rules.push(`        <Image condition="${condition}">${proc}</Image>`);
+                });
+            }
+
+            if (commandLine) {
+                const commands = commandLine.split(';').map(c => c.trim()).filter(c => c);
+                commands.forEach(cmd => {
+                    rules.push(`        <CommandLine condition="${condition}">${cmd}</CommandLine>`);
+                });
+            }
+
+            if (parentImage) {
+                const parents = parentImage.split(';').map(p => p.trim()).filter(p => p);
+                parents.forEach(parent => {
+                    rules.push(`        <ParentImage condition="${condition}">${parent}</ParentImage>`);
+                });
+            }
+
+            if (destinationIp) {
+                const ips = destinationIp.split(';').map(ip => ip.trim()).filter(ip => ip);
+                ips.forEach(ip => {
+                    rules.push(`        <DestinationIp condition="${condition}">${ip}</DestinationIp>`);
+                });
+            }
+
+            if (destinationPort) {
+                const ports = destinationPort.split(';').map(p => p.trim()).filter(p => p);
+                ports.forEach(port => {
+                    rules.push(`        <DestinationPort condition="${condition}">${port}</DestinationPort>`);
+                });
+            }
+
+            if (targetFilename) {
+                const files = targetFilename.split(';').map(f => f.trim()).filter(f => f);
+                files.forEach(file => {
+                    rules.push(`        <TargetFilename condition="${condition}">${file}</TargetFilename>`);
+                });
+            }
+
+            if (targetObject) {
+                const objects = targetObject.split(';').map(o => o.trim()).filter(o => o);
+                objects.forEach(obj => {
+                    rules.push(`        <TargetObject condition="${condition}">${obj}</TargetObject>`);
+                });
+            }
+
+            const rulesContent = rules.length > 0 ? rules.join('\n') : `        <Image condition="contains">*</Image>`;
+
+            const sysmonRule = `<Sysmon schemaversion="4.82">
   <EventFiltering>
-    <ProcessCreate onmatch="include">
-      <Rule name="${ruleName}">
-        <ParentImage condition="contains">${processName}</ParentImage>
-        <CommandLine condition="contains">${arguments}</CommandLine>
-      </Rule>
-    </ProcessCreate>
+    <!-- ${description || 'Generated Sysmon rule'} -->
+    <RuleGroup name="${ruleName}" groupRelation="or">
+      <${eventType} onmatch="${matchType}">
+        <Rule name="${ruleName}">
+${rulesContent}
+        </Rule>
+      </${eventType}>
+    </RuleGroup>
   </EventFiltering>
 </Sysmon>`;
 
             document.getElementById('ruleOutput').textContent = sysmonRule;
             document.getElementById('result').style.display = 'block';
         }
-        
+
+        function clearForm() {
+            document.getElementById('sysmonForm').reset();
+            document.getElementById('template').value = '';
+            document.getElementById('result').style.display = 'none';
+            updateFieldsForEventType();
+        }
+
+        function validateRule() {
+            const ruleOutput = document.getElementById('ruleOutput').textContent;
+            if (!ruleOutput) {
+                alert('Please generate a rule first');
+                return;
+            }
+
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(ruleOutput, "text/xml");
+                const parseError = xmlDoc.getElementsByTagName("parsererror");
+                
+                if (parseError.length > 0) {
+                    alert('❌ XML validation failed:\n' + parseError[0].textContent);
+                } else {
+                    alert('✅ Rule XML is valid!');
+                }
+            } catch (error) {
+                alert('❌ Validation error: ' + error.message);
+            }
+        }
+
+        function copyToClipboard() {
+            const ruleContent = document.getElementById('ruleOutput').textContent;
+            if (!ruleContent) {
+                alert('No rule to copy');
+                return;
+            }
+
+            navigator.clipboard.writeText(ruleContent).then(() => {
+                alert('✅ Rule copied to clipboard!');
+            }).catch(err => {
+                alert('❌ Failed to copy to clipboard');
+            });
+        }
+
+        function showRuleStats() {
+            const ruleContent = document.getElementById('ruleOutput').textContent;
+            if (!ruleContent) {
+                alert('No rule to analyze');
+                return;
+            }
+
+            const lines = ruleContent.split('\n').length;
+            const conditions = (ruleContent.match(/condition="/g) || []).length;
+            const ruleGroups = (ruleContent.match(/<Rule name="/g) || []).length;
+            
+            alert(`📊 Rule Statistics:\n\n• Lines: ${lines}\n• Conditions: ${conditions}\n• Rule Groups: ${ruleGroups}\n• Characters: ${ruleContent.length}`);
+        }
+
+        // Download functionality
+        document.getElementById('downloadBtn').addEventListener('click', function () {
+            const ruleName = document.getElementById('ruleName').value.trim().replace(/\s+/g, '_');
+            const ruleContent = document.getElementById('ruleOutput').textContent;
+            
+            if (!ruleContent) {
+                alert('No rule to download');
+                return;
+            }
+            
+            const blob = new Blob([ruleContent], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${ruleName || 'sysmon_rule'}.xml`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Initialize form
+        updateFieldsForEventType();
     </script>
-<script>
-    document.getElementById('downloadBtn').addEventListener('click', function () {
-        const ruleName = document.getElementById('ruleName').value.trim().replace(/\s+/g, '_');
-        const ruleContent = document.getElementById('ruleOutput').textContent;
-        const blob = new Blob([ruleContent], { type: 'application/xml' });
-        const url = URL.createObjectURL(blob);
-    
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${ruleName}.rule`;  // <-- fixed this line
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    });
-    </script>
-    
 </body>
 </html>
