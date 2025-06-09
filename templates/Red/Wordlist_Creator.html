@@ -89,8 +89,19 @@
       }
     }
 
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
     .form-group {
       margin-bottom: 15px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
     }
 
     label {
@@ -101,7 +112,7 @@
       margin-bottom: 5px;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 10px;
       border: 2px solid var(--color-neon-red);
@@ -114,9 +125,31 @@
       transition: all 0.3s ease-in-out;
     }
 
-    input:focus {
+    input:focus, select:focus {
       box-shadow: 0 0 10px var(--color-neon-red);
       border-color: var(--color-neon-red);
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--color-text-light);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      accent-color: var(--color-neon-red);
     }
 
     button {
@@ -141,7 +174,79 @@
       box-shadow: 0 0 20px var(--color-neon-red);
     }
 
-    /* Animated Scan Lines */
+    button:active {
+      transform: translateY(0);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--color-medium);
+      border-radius: 3px;
+      margin: 15px 0;
+      overflow: hidden;
+      border: 1px solid var(--color-neon-red);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-neon-red), var(--color-neon-cyan));
+      width: 0%;
+      transition: width 0.3s ease;
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .status {
+      font-size: 12px;
+      color: var(--color-neon-cyan);
+      margin: 10px 0;
+      min-height: 20px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(255, 7, 58, 0.1);
+      border-radius: 8px;
+      border: 1px solid var(--color-neon-red);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--color-neon-cyan);
+      text-shadow: 0 0 5px var(--color-neon-cyan);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--color-text-light);
+    }
+
     .scanlines {
       position: fixed;
       top: 0;
@@ -153,22 +258,17 @@
           rgba(255, 255, 255, 0.02),
           rgba(255, 255, 255, 0.02) 1px,
           transparent 1px,
-          transparent 2px
+          transparent 3px
       );
       pointer-events: none;
-      animation: scanlines 0.3s linear infinite;
+      animation: scanlines 0.5s linear infinite;
     }
 
     @keyframes scanlines {
-      from {
-        transform: translateY(0);
-      }
-      to {
-        transform: translateY(2px);
-      }
+      from { transform: translateY(0); }
+      to { transform: translateY(3px); }
     }
 
-    /* Back Button Styles */
     .back-button {
       position: absolute;
       top: 20px;
@@ -177,12 +277,12 @@
       font-size: 8px;
       color: var(--color-neon-red);
       text-decoration: none;
-      padding: 5px 10px;
+      padding: 8px 12px;
       border: 1px solid var(--color-neon-red);
-      border-radius: 3px;
+      border-radius: 5px;
       background: transparent;
       transition: all 0.3s ease;
-      box-shadow: 0 0 8px var(--color-neon-red);
+      box-shadow: 0 0 10px var(--color-neon-red);
     }
 
     .back-button:hover {
@@ -190,73 +290,452 @@
       color: var(--color-dark);
       box-shadow: 0 0 20px var(--color-neon-red);
     }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <a href="javascript:history.back()" class="back-button">← BACK</a>
-    <h1>Wordlist Generator</h1>
+    <h1> Wordlist Generator</h1>
+    
     <form id="wordlist-form">
-      <div class="form-group">
-        <label for="info">Enter Keywords (e.g., name, birthdate, etc.):</label>
-        <input type="text" id="info" placeholder="e.g., john doe 1990" required>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="names">Names/Keywords:</label>
+          <input type="text" id="names" placeholder="john, doe, admin" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="years">Years:</label>
+          <input type="text" id="years" placeholder="1990, 2000, 2023">
+        </div>
+        
+        <div class="form-group">
+          <label for="company">Company/Organization:</label>
+          <input type="text" id="company" placeholder="microsoft, google">
+        </div>
+        
+        <div class="form-group">
+          <label for="numbers">Special Numbers:</label>
+          <input type="text" id="numbers" placeholder="123, 007, 2023">
+        </div>
+        
+        <div class="form-group">
+          <label for="complexity">Complexity Level:</label>
+          <select id="complexity">
+            <option value="basic">Basic (Fast)</option>
+            <option value="medium" selected>Medium (Balanced)</option>
+            <option value="advanced">Advanced (Comprehensive)</option>
+            <option value="extreme">Extreme (All Combinations)</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="max-length">Max Word Length:</label>
+          <select id="max-length">
+            <option value="8">8 characters</option>
+            <option value="12" selected>12 characters</option>
+            <option value="16">16 characters</option>
+            <option value="20">20 characters</option>
+            <option value="0">No limit</option>
+          </select>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="years">Enter Years (e.g., 1990, 2000, etc.):</label>
-        <input type="text" id="years" placeholder="e.g., 1990,2000" required>
+      
+      <div class="form-group full-width">
+        <label>Additional Options:</label>
+        <div class="checkbox-group">
+          <div class="checkbox-item">
+            <input type="checkbox" id="leetspeak" checked>
+            <label for="leetspeak">L33t Sp34k</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="case-variations" checked>
+            <label for="case-variations">Case Variations</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="separators" checked>
+            <label for="separators">Separators (_, -, @)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="keyboard-patterns">
+            <label for="keyboard-patterns">Keyboard Patterns</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="common-passwords">
+            <label for="common-passwords">Common Passwords</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="reverse-words">
+            <label for="reverse-words">Reverse Words</label>
+          </div>
+        </div>
       </div>
-      <button type="submit">Generate and Download Wordlist</button>
+      
+      <button type="submit" id="generate-btn">Generate Enhanced Wordlist</button>
+      
+      <div class="progress-bar" id="progress-bar" style="display: none;">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      
+      <div class="status" id="status"></div>
+      
+      <div class="stats" id="stats" style="display: none;">
+        <div class="stat-item">
+          <div class="stat-value" id="word-count">0</div>
+          <div class="stat-label">Words Generated</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="unique-count">0</div>
+          <div class="stat-label">Unique Words</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="file-size">0 KB</div>
+          <div class="stat-label">File Size</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="time-taken">0s</div>
+          <div class="stat-label">Generation Time</div>
+        </div>
+      </div>
     </form>
   </div>
 
   <div class="scanlines"></div>
 
   <script>
-    document.getElementById('wordlist-form').addEventListener('submit', function (e) {
-      e.preventDefault();
+    class EnhancedWordlistGenerator {
+      constructor() {
+        this.commonPasswords = [
+          'password', 'admin', 'root', 'user', 'test', 'guest', 'login',
+          'welcome', 'master', 'secret', 'default', 'qwerty', 'letmein'
+        ];
+        
+        this.keyboardPatterns = [
+          'qwerty', 'qwertyuiop', 'asdfgh', 'asdfghjkl', 'zxcvbn', 'zxcvbnm',
+          '123456', '1234567890', '098765', '0987654321'
+        ];
+        
+        this.separators = ['', '_', '-', '@', '.', '!'];
+        this.leetMap = {
+          'a': ['a', '@', '4'], 'e': ['e', '3'], 'i': ['i', '1', '!'],
+          'o': ['o', '0'], 's': ['s', '$', '5'], 't': ['t', '7'],
+          'l': ['l', '1'], 'g': ['g', '9'], 'b': ['b', '6']
+        };
+      }
 
-      // Get user inputs
-      const info = document.getElementById('info').value.split(' ');
-      const years = document.getElementById('years').value.split(',');
-
-      // Generate wordlist
-      const wordlist = generateWordlist(info, years);
-
-      // Download the wordlist
-      downloadWordlist(wordlist);
-    });
-
-    // Function to generate wordlist
-    function generateWordlist(info, years) {
-      const commonWords = ['admin', 'test', 'root'];
-      const commonNumbers = ['123123', '123456', '123456789', '12345678', '1234'];
-      const wordlist = [];
-
-      for (const word of [...info, ...commonWords]) {
-        wordlist.push(word);
-        for (const year of years) {
-          wordlist.push(word + year);
-          wordlist.push(word + '@' + year);
+      async generateWordlist(options) {
+        const startTime = Date.now();
+        const words = new Set();
+        
+        // Parse inputs
+        const names = this.parseInput(options.names);
+        const years = this.parseInput(options.years);
+        const companies = this.parseInput(options.company);
+        const numbers = this.parseInput(options.numbers);
+        
+        const allBaseWords = [...names, ...companies];
+        const allNumbers = [...years, ...numbers];
+        
+        // Add common passwords if enabled
+        if (options.commonPasswords) {
+          this.commonPasswords.forEach(pwd => words.add(pwd));
+        }
+        
+        // Add keyboard patterns if enabled
+        if (options.keyboardPatterns) {
+          this.keyboardPatterns.forEach(pattern => words.add(pattern));
+        }
+        
+        const totalSteps = this.calculateTotalSteps(allBaseWords, allNumbers, options);
+        let currentStep = 0;
+        
+        // Generate base combinations
+        for (const word of allBaseWords) {
+          words.add(word);
+          
+          // Case variations
+          if (options.caseVariations) {
+            words.add(word.toLowerCase());
+            words.add(word.toUpperCase());
+            words.add(this.capitalize(word));
+          }
+          
+          // Reverse words
+          if (options.reverseWords) {
+            words.add(word.split('').reverse().join(''));
+          }
+          
+          // Leet speak
+          if (options.leetspeak) {
+            words.add(this.toLeetSpeak(word));
+          }
+          
+          currentStep++;
+          this.updateProgress((currentStep / totalSteps) * 30);
+          await this.sleep(1);
+        }
+        
+        // Generate number combinations
+        for (const num of allNumbers) {
+          words.add(num.toString());
+          currentStep++;
+          this.updateProgress(30 + (currentStep / totalSteps) * 20);
+          await this.sleep(1);
+        }
+        
+        // Generate word + number combinations
+        for (const word of allBaseWords) {
+          for (const num of allNumbers) {
+            const variations = this.generateWordNumberCombinations(word, num, options);
+            variations.forEach(v => words.add(v));
+          }
+          currentStep++;
+          this.updateProgress(50 + (currentStep / totalSteps) * 30);
+          await this.sleep(1);
+        }
+        
+        // Advanced combinations for medium+ complexity
+        if (options.complexity !== 'basic') {
+          await this.generateAdvancedCombinations(words, allBaseWords, allNumbers, options);
+        }
+        
+        // Extreme combinations
+        if (options.complexity === 'extreme') {
+          await this.generateExtremeCombinations(words, allBaseWords, allNumbers, options);
+        }
+        
+        this.updateProgress(90);
+        
+        // Filter by length
+        const filteredWords = this.filterByLength([...words], options.maxLength);
+        
+        // Remove duplicates and sort
+        const uniqueWords = [...new Set(filteredWords)].sort();
+        
+        this.updateProgress(100);
+        
+        const endTime = Date.now();
+        const timeTaken = ((endTime - startTime) / 1000).toFixed(1);
+        
+        return {
+          words: uniqueWords,
+          stats: {
+            totalGenerated: words.size,
+            uniqueWords: uniqueWords.length,
+            fileSize: this.calculateFileSize(uniqueWords),
+            timeTaken: timeTaken
+          }
+        };
+      }
+      
+      generateWordNumberCombinations(word, num, options) {
+        const combinations = [];
+        const numStr = num.toString();
+        
+        if (options.separators) {
+          this.separators.forEach(sep => {
+            combinations.push(word + sep + numStr);
+            combinations.push(numStr + sep + word);
+          });
+        } else {
+          combinations.push(word + numStr);
+          combinations.push(numStr + word);
+        }
+        
+        if (options.leetspeak) {
+          const leetWord = this.toLeetSpeak(word);
+          combinations.push(leetWord + numStr);
+          combinations.push(numStr + leetWord);
+        }
+        
+        if (options.caseVariations) {
+          combinations.push(word.toUpperCase() + numStr);
+          combinations.push(word.toLowerCase() + numStr);
+          combinations.push(this.capitalize(word) + numStr);
+        }
+        
+        return combinations;
+      }
+      
+      async generateAdvancedCombinations(words, baseWords, numbers, options) {
+        // Word + Word combinations
+        for (let i = 0; i < baseWords.length; i++) {
+          for (let j = i + 1; j < baseWords.length; j++) {
+            if (options.separators) {
+              this.separators.forEach(sep => {
+                words.add(baseWords[i] + sep + baseWords[j]);
+                words.add(baseWords[j] + sep + baseWords[i]);
+              });
+            }
+          }
+          this.updateProgress(80 + (i / baseWords.length) * 10);
+          await this.sleep(1);
+        }
+        
+        // Triple combinations for medium+ complexity
+        if (baseWords.length >= 2 && numbers.length >= 1) {
+          for (const word1 of baseWords.slice(0, 3)) {
+            for (const word2 of baseWords.slice(0, 3)) {
+              for (const num of numbers.slice(0, 3)) {
+                if (word1 !== word2) {
+                  words.add(word1 + word2 + num);
+                  words.add(word1 + num + word2);
+                }
+              }
+            }
+          }
         }
       }
-
-      for (const number of [...commonNumbers, ...years]) {
-        wordlist.push(number);
+      
+      async generateExtremeCombinations(words, baseWords, numbers, options) {
+        // All possible separators between all combinations
+        const extremeSeparators = ['', '_', '-', '@', '.', '!', '#', '$', '%'];
+        
+        for (const word of baseWords.slice(0, 5)) {
+          for (const num of numbers.slice(0, 5)) {
+            for (const sep of extremeSeparators) {
+              words.add(word + sep + num);
+              words.add(num + sep + word);
+              
+              // Double numbers
+              words.add(word + sep + num + num);
+              words.add(num + num + sep + word);
+              
+              // Year variations
+              if (num.toString().length === 4) {
+                const shortYear = num.toString().slice(-2);
+                words.add(word + sep + shortYear);
+                words.add(shortYear + sep + word);
+              }
+            }
+          }
+        }
       }
-
-      return wordlist;
+      
+      toLeetSpeak(word) {
+        return word.toLowerCase().split('').map(char => {
+          if (this.leetMap[char]) {
+            return this.leetMap[char][Math.floor(Math.random() * this.leetMap[char].length)];
+          }
+          return char;
+        }).join('');
+      }
+      
+      capitalize(word) {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      }
+      
+      parseInput(input) {
+        if (!input) return [];
+        return input.split(',').map(item => item.trim()).filter(item => item.length > 0);
+      }
+      
+      filterByLength(words, maxLength) {
+        if (maxLength === 0) return words;
+        return words.filter(word => word.length <= maxLength);
+      }
+      
+      calculateFileSize(words) {
+        const content = words.join('\n');
+        const bytes = new Blob([content]).size;
+        return (bytes / 1024).toFixed(1);
+      }
+      
+      calculateTotalSteps(baseWords, numbers, options) {
+        let steps = baseWords.length + numbers.length;
+        if (options.complexity !== 'basic') {
+          steps += baseWords.length * baseWords.length;
+        }
+        return steps || 1;
+      }
+      
+      updateProgress(percentage) {
+        const progressFill = document.getElementById('progress-fill');
+        const progressBar = document.getElementById('progress-bar');
+        const status = document.getElementById('status');
+        
+        progressBar.style.display = 'block';
+        progressFill.style.width = percentage + '%';
+        status.textContent = `Generating... ${Math.round(percentage)}%`;
+      }
+      
+      updateStats(stats) {
+        document.getElementById('word-count').textContent = stats.totalGenerated.toLocaleString();
+        document.getElementById('unique-count').textContent = stats.uniqueWords.toLocaleString();
+        document.getElementById('file-size').textContent = stats.fileSize + ' KB';
+        document.getElementById('time-taken').textContent = stats.timeTaken + 's';
+        document.getElementById('stats').style.display = 'grid';
+      }
+      
+      downloadWordlist(words) {
+        const content = words.join('\n');
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wordlist_${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+      
+      sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
     }
 
-    // Function to download wordlist as a .txt file
-    function downloadWordlist(wordlist) {
-      const blob = new Blob([wordlist.join('\n')], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'wordlist.txt';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+    // Initialize the generator
+    const generator = new EnhancedWordlistGenerator();
+
+    document.getElementById('wordlist-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      
+      const generateBtn = document.getElementById('generate-btn');
+      const originalText = generateBtn.textContent;
+      
+      generateBtn.disabled = true;
+      generateBtn.textContent = 'Generating...';
+      
+      try {
+        const options = {
+          names: document.getElementById('names').value,
+          years: document.getElementById('years').value,
+          company: document.getElementById('company').value,
+          numbers: document.getElementById('numbers').value,
+          complexity: document.getElementById('complexity').value,
+          maxLength: parseInt(document.getElementById('max-length').value),
+          leetspeak: document.getElementById('leetspeak').checked,
+          caseVariations: document.getElementById('case-variations').checked,
+          separators: document.getElementById('separators').checked,
+          keyboardPatterns: document.getElementById('keyboard-patterns').checked,
+          commonPasswords: document.getElementById('common-passwords').checked,
+          reverseWords: document.getElementById('reverse-words').checked
+        };
+        
+        const result = await generator.generateWordlist(options);
+        
+        generator.updateStats(result.stats);
+        document.getElementById('status').textContent = `✓ Generated ${result.words.length} unique passwords!`;
+        
+        // Auto-download after 1 second
+        setTimeout(() => {
+          generator.downloadWordlist(result.words);
+        }, 1000);
+        
+      } catch (error) {
+        document.getElementById('status').textContent = '❌ Error generating wordlist: ' + error.message;
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = originalText;
+      }
+    });
   </script>
 </body>
 </html>
