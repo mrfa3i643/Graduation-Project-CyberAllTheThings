@@ -31,14 +31,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* Center content vertically */
+            justify-content: center;
             text-align: center;
             padding: 20px;
             position: relative;
             overflow: hidden;
         }
 
-        /* Glowing Grid Background */
         body::before {
             content: '';
             position: absolute;
@@ -145,7 +144,6 @@
             box-shadow: 0 0 20px var(--color-neon-blue);
         }
 
-        /* Dropdown Styling */
         .dropdown {
             position: relative;
             width: 90%;
@@ -171,14 +169,43 @@
             background-color: var(--color-light);
             width: 100%;
             box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-            z-index: 1;
+            z-index: 1000;
             border-radius: 4px;
             left: 0;
             margin-top: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid var(--color-neon-blue);
         }
 
         .dropdown-menu.show {
             display: block;
+        }
+
+        /* Custom scrollbar for dropdown */
+        .dropdown-menu::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-track {
+            background: var(--color-medium);
+            border-radius: 4px;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-thumb {
+            background: var(--color-neon-blue);
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-thumb:hover {
+            background: var(--color-glitch1);
+        }
+
+        /* Firefox scrollbar */
+        .dropdown-menu {
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-neon-blue) var(--color-medium);
         }
 
         .dropdown-item {
@@ -187,11 +214,19 @@
             display: block;
             border-bottom: 1px solid var(--color-medium);
             text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
         }
 
         .dropdown-item:hover {
             background-color: var(--color-neon-blue);
             color: var(--color-dark);
+            transform: translateX(2px);
         }
 
         .message {
@@ -235,7 +270,7 @@
             </div>
         </div>
 
-        <button id="encodeButton">🔒 Encode</button>
+        <button id="obfuscateButton">🚀 Obfuscate</button>
 
         <input id="fileName" type="text" placeholder="Output File Name">
 
@@ -248,56 +283,277 @@
         <div id="message" class="message"></div>
     </div>
 
-    <script src="/static/Blue/encoder.js"></script>
     <script>
-        document.getElementById("downloadButton").addEventListener("click", function () {
-            const fileNameInput = document.getElementById("fileName").value.trim();
-            const outputText = document.getElementById("outputText").value;
-        
-            if (!outputText) {
-                alert("The output field is empty. Nothing to download!");
+        // Enhanced obfuscation techniques
+        const obfuscationMethods = {
+            // Encoding Methods
+            'Base64 - Bash': (code) => `echo "${btoa(code)}" | base64 -d | bash`,
+            'Base64 - PowerShell': (code) => `[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("${btoa(code)}")) | Invoke-Expression`,
+            'Base64 - Python': (code) => `import base64; exec(base64.b64decode("${btoa(code)}").decode())`,
+            'Base64 - CMD': (code) => `echo ${btoa(code)} | certutil -decode -f nul & del nul`,
+            
+            // Hex Encoding
+            'Hex - Bash': (code) => {
+                const hex = Array.from(code).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+                return `echo "${hex}" | xxd -r -p | bash`;
+            },
+            'Hex - PowerShell': (code) => {
+                const hex = Array.from(code).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+                return `[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromHexString("${hex}")) | Invoke-Expression`;
+            },
+            'Hex - Python': (code) => {
+                const hex = Array.from(code).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+                return `exec(bytes.fromhex("${hex}").decode())`;
+            },
+
+            // URL Encoding
+            'URL Encode - JavaScript': (code) => `eval(decodeURIComponent("${encodeURIComponent(code)}"))`,
+            'URL Encode - Python': (code) => `import urllib.parse; exec(urllib.parse.unquote("${encodeURIComponent(code)}"))`,
+
+            // ROT13/Caesar Cipher
+            'ROT13 - Bash': (code) => {
+                const rot13 = code.replace(/[a-zA-Z]/g, c => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
+                return `echo "${rot13}" | tr 'A-Za-z' 'N-ZA-Mn-za-m' | bash`;
+            },
+            'ROT13 - Python': (code) => {
+                const rot13 = code.replace(/[a-zA-Z]/g, c => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
+                return `import codecs; exec(codecs.decode("${rot13}", "rot13"))`;
+            },
+
+            // Reverse String
+            'Reverse - Bash': (code) => `echo "${code.split('').reverse().join('')}" | rev | bash`,
+            'Reverse - PowerShell': (code) => `"${code.split('').reverse().join('')}".ToCharArray(); [Array]::Reverse($a); ($a -join '') | Invoke-Expression`,
+            'Reverse - Python': (code) => `exec("${code.split('').reverse().join('')}"[::-1])`,
+
+            // Character Code Arrays
+            'CharCode - JavaScript': (code) => `eval(String.fromCharCode(${Array.from(code).map(c => c.charCodeAt(0)).join(',')}))`,
+            'CharCode - PowerShell': (code) => `[char[]]@(${Array.from(code).map(c => c.charCodeAt(0)).join(',')}) -join '' | Invoke-Expression`,
+            'CharCode - Python': (code) => `exec(''.join(chr(i) for i in [${Array.from(code).map(c => c.charCodeAt(0)).join(',')}]))`,
+
+            // Gzip Compression
+            'Gzip - Bash': (code) => {
+                // Simulated gzip (would need actual compression in real implementation)
+                const compressed = btoa(code);
+                return `echo "${compressed}" | base64 -d | gunzip | bash`;
+            },
+            'Gzip - Python': (code) => {
+                const compressed = btoa(code);
+                return `import gzip, base64; exec(gzip.decompress(base64.b64decode("${compressed}")).decode())`;
+            },
+
+            // XOR Obfuscation
+            'XOR - Python': (code) => {
+                const key = 42; // Simple XOR key
+                const xored = Array.from(code).map(c => c.charCodeAt(0) ^ key).join(',');
+                return `exec(''.join(chr(i ^ 42) for i in [${xored}]))`;
+            },
+            'XOR - JavaScript': (code) => {
+                const key = 42;
+                const xored = Array.from(code).map(c => c.charCodeAt(0) ^ key).join(',');
+                return `eval(String.fromCharCode(...[${xored}].map(x => x ^ 42)))`;
+            },
+
+            // Multiple Encoding Layers
+            'Double Base64 - Bash': (code) => `echo "${btoa(btoa(code))}" | base64 -d | base64 -d | bash`,
+            'Base64+Hex - Python': (code) => {
+                const b64 = btoa(code);
+                const hex = Array.from(b64).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+                return `import base64; exec(base64.b64decode(bytes.fromhex("${hex}")).decode())`;
+            },
+
+            // Environment Variable Technique
+            'EnvVar - Bash': (code) => {
+                const chunks = code.match(/.{1,20}/g) || [];
+                const vars = chunks.map((chunk, i) => `export VAR${i}="${chunk}"`).join('; ');
+                const reconstruct = chunks.map((_, i) => `$VAR${i}`).join('');
+                return `${vars}; eval "${reconstruct}"`;
+            },
+
+            // PowerShell Specific Techniques
+            'PS Invoke-Expression': (code) => `$code="${code}"; Invoke-Expression $code`,
+            'PS ScriptBlock': (code) => `& ([ScriptBlock]::Create("${code}"))`,
+            'PS Compressed': (code) => {
+                const compressed = btoa(code);
+                return `[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("${compressed}")) | Invoke-Expression`;
+            },
+
+            // Advanced Bash Techniques
+            'Bash Parameter Expansion': (code) => {
+                const vars = code.split('').map((char, i) => `a${i}='${char.replace(/'/g, "'\\''")}'`).join('; ');
+                const reconstruct = code.split('').map((_, i) => `$a${i}`).join('');
+                return `${vars}; eval "${reconstruct}"`;
+            },
+
+            'Bash Here-String': (code) => `bash <<<$'${code.replace(/\\/g, '\\\\').replace(/'/g, `\\'`)}'`,
+
+            'Python Compile': (code) => `exec(compile("${code.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}", "<string>", "exec"))`,
+            'Python Lambda': (code) => `(lambda: exec("${code.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"))()`,
+            'Python Eval Chain': (code) => `eval(compile("${code.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}", "exec", "exec"))`,
+
+            // Steganography-like
+            'Whitespace - Python': (code) => {
+                // Replace spaces with different unicode spaces
+                const obfuscated = code.replace(/ /g, '\u2000');
+                return `exec("${obfuscated}".replace('\\u2000', ' '))`;
+            },
+
+            // File-based Obfuscation
+            'Temp File - Bash': (code) => `echo "${code}" > /tmp/.t && chmod +x /tmp/.t && /tmp/.t && rm /tmp/.t`,
+            'Heredoc - Bash': (code) => `cat << 'EOF' | bash\n${code}\nEOF`,
+
+            // Network-based (simulated)
+            'Curl Pipe - Bash': (code) => {
+                const encoded = btoa(code);
+                return `curl -s "data:text/plain;base64,${encoded}" | base64 -d | bash`;
+            }
+        };
+
+        // Initialize dropdown
+        function initializeDropdown() {
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            
+            Object.keys(obfuscationMethods).forEach(method => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                item.textContent = method;
+                item.onclick = () => selectEncoding(method);
+                dropdownMenu.appendChild(item);
+            });
+        }
+
+        function selectEncoding(method) {
+            document.getElementById('currentEncMode').textContent = method;
+            document.getElementById('dropdownMenu').classList.remove('show');
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Modern copy function with fallback
+        async function copyToClipboard(text) {
+            try {
+                // Try modern clipboard API first
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                } else {
+                    // Fallback for older browsers or non-secure contexts
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    
+                    try {
+                        const successful = document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        return successful;
+                    } catch (err) {
+                        document.body.removeChild(textArea);
+                        return false;
+                    }
+                }
+            } catch (err) {
+                return false;
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('dropdownToggle').addEventListener('click', function() {
+            document.getElementById('dropdownMenu').classList.toggle('show');
+        });
+
+        document.getElementById('obfuscateButton').addEventListener('click', function() {
+            const inputText = document.getElementById('inputText').value.trim();
+            const currentMethod = document.getElementById('currentEncMode').textContent;
+            
+            if (!inputText) {
+                showMessage('Please enter some code to obfuscate!', 'error');
                 return;
             }
-        
-            // Get language from the selected encoding mode (e.g., "Base64 - Bash")
-            const encModeText = document.getElementById("currentEncMode").textContent;
-            const lang = encModeText.split(" - ")[1]?.toLowerCase();
-        
-            // Determine extension
-            let extension = "txt"; // fallback
-            switch (lang) {
-                case "bash":
-                    extension = "sh";
-                    break;
-                case "powershell":
-                    extension = "ps1";
-                    break;
-                case "python":
-                    extension = "py";
-                    break;
-                case "batch":
-                case "cmd":
-                    extension = "bat";
-                    break;
-                case "javascript":
-                    extension = "js";
-                    break;
-                default:
-                    extension = "txt";
+
+            try {
+                const obfuscated = obfuscationMethods[currentMethod](inputText);
+                document.getElementById('outputText').value = obfuscated;
+                showMessage('Code obfuscated successfully!', 'success');
+            } catch (error) {
+                showMessage('Error during obfuscation: ' + error.message, 'error');
             }
-        
-            const fileName = fileNameInput ? `${fileNameInput}.${extension}` : `encoded_file.${extension}`;
-            const blob = new Blob([outputText], { type: "text/plain" });
-            const a = document.createElement("a");
-        
+        });
+
+        document.getElementById('copyButton').addEventListener('click', async function() {
+            const outputText = document.getElementById('outputText').value;
+            if (!outputText) {
+                showMessage('Nothing to copy!', 'error');
+                return;
+            }
+            
+            const success = await copyToClipboard(outputText);
+            if (success) {
+                showMessage('Copied to clipboard successfully!', 'success');
+            } else {
+                showMessage('Failed to copy. Please select and copy manually.', 'error');
+            }
+        });
+
+        document.getElementById('clearButton').addEventListener('click', function() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputText').value = '';
+            document.getElementById('fileName').value = '';
+            showMessage('Fields cleared!', 'success');
+        });
+
+        document.getElementById('downloadButton').addEventListener('click', function() {
+            const fileNameInput = document.getElementById('fileName').value.trim();
+            const outputText = document.getElementById('outputText').value;
+
+            if (!outputText) {
+                showMessage('The output field is empty. Nothing to download!', 'error');
+                return;
+            }
+
+            const encModeText = document.getElementById('currentEncMode').textContent;
+            let extension = 'txt';
+            
+            if (encModeText.includes('Bash') || encModeText.includes('bash')) extension = 'sh';
+            else if (encModeText.includes('PowerShell') || encModeText.includes('PS')) extension = 'ps1';
+            else if (encModeText.includes('Python')) extension = 'py';
+            else if (encModeText.includes('CMD') || encModeText.includes('Batch')) extension = 'bat';
+            else if (encModeText.includes('JavaScript')) extension = 'js';
+
+            const fileName = fileNameInput ? `${fileNameInput}.${extension}` : `obfuscated_code.${extension}`;
+            const blob = new Blob([outputText], { type: 'text/plain' });
+            const a = document.createElement('a');
+
             a.href = URL.createObjectURL(blob);
             a.download = fileName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(a.href);
+            
+            showMessage(`Downloaded as ${fileName}`, 'success');
         });
-        </script>
-        
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.dropdown')) {
+                document.getElementById('dropdownMenu').classList.remove('show');
+            }
+        });
+
+        // Initialize the application
+        initializeDropdown();
+    </script>
 </body>
 </html>
