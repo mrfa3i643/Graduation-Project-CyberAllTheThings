@@ -42,6 +42,7 @@ git clone https://github.com/mrfa3i643/Graduation-project.git
 cd Graduation-project
 
 # Run the installer script to install dependencies and set up the launcher
+chmod +x installer.sh
 ./installer.sh
 
 # Start the Flask server using the custom launcher command
